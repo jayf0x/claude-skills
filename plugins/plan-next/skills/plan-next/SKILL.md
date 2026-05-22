@@ -23,7 +23,7 @@ and plan file to figure out exactly where you left off.
 ## Step 1 — Run the context script
 
 ```bash
-bash "$(dirname "$0")/../scripts/plan-context.sh" "$ARGUMENTS"
+bash "${HOME}/.claude/skills/plan-next/scripts/plan-context.sh" "$ARGUMENTS"
 ```
 
 Run this and read its full output before doing anything else.
@@ -99,26 +99,6 @@ Common stage patterns that are recognized:
 - [ ] Step 1              # Checkbox lists (unchecked = not done)
 - [x] Step 1              # Checked = done
 **Step 1:**               # Bold inline
-```
-
----
-
-## Installation
-
-To install globally (works in any project):
-```bash
-mkdir -p ~/.claude/skills/plan-next/scripts
-cp path/to/SKILL.md ~/.claude/skills/plan-next/SKILL.md
-cp path/to/scripts/plan-context.sh ~/.claude/skills/plan-next/scripts/
-chmod +x ~/.claude/skills/plan-next/scripts/plan-context.sh
-```
-
-Invoke as `/plan-next` or `/plan-next b` (for explicit Stage B).
-
-To also get `/plan` as the shorthand, add a thin command file:
-```bash
-mkdir -p ~/.claude/commands
-echo 'Use the plan-next skill with argument: $ARGUMENTS' > ~/.claude/commands/plan.md
 ```
 
 ---

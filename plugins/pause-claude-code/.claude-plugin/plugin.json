@@ -1,0 +1,11 @@
+{
+  "name": "pause-claude-code",
+  "version": "1.0.0",
+  "description": "PreToolUse hook that warns and blocks tool calls when the context window approaches its limit. Prevents mid-task session death by alerting at 80% and blocking at 95% (configurable). Includes /pause-ignore command to suppress checks temporarily.",
+  "author": {
+    "name": "Jay Fox",
+    "email": "jjay56883@gmail.com"
+  },
+  "requires": ["jq"],
+  "keywords": ["context-window", "hook", "guard", "tokens", "pause", "safety"]
+}

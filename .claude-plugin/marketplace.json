@@ -1,0 +1,22 @@
+{
+  "name": "jayf0x-skills",
+  "owner": {
+    "name": "Jay Fox",
+    "email": "jjay56883@gmail.com"
+  },
+  "metadata": {
+    "description": "Claude Code skills by Jay Fox — context-window guardrail and smart session continuation"
+  },
+  "plugins": [
+    {
+      "name": "pause-claude-code",
+      "source": "./plugins/pause-claude-code",
+      "description": "PreToolUse hook that warns and then blocks tool calls when the context window approaches its limit, preventing mid-task session death."
+    },
+    {
+      "name": "plan-next",
+      "source": "./plugins/plan-next",
+      "description": "Smart session-continuation skill. Reads your plan file and session history to auto-detect the next stage and begin it immediately."
+    }
+  ]
+}

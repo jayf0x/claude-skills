@@ -79,7 +79,6 @@ python3 - "${SESSION_FILES[@]}" <<'PYEOF'
 import json, sys, os
 
 def get_text(content):
-    """Extract plain text from Claude message content (str or content-block list)."""
     if isinstance(content, str):
         return content.strip()
     if isinstance(content, list):
@@ -93,7 +92,6 @@ def get_text(content):
     return ''
 
 def read_session(path):
-    """Return list of (role, text) for human/assistant turns."""
     turns = []
     try:
         with open(path) as f:
@@ -105,55 +103,37 @@ def read_session(path):
                     obj = json.loads(line)
                 except json.JSONDecodeError:
                     continue
-                
                 msg_type = obj.get('type', '')
-                
-                # Handle both "human"/"assistant" and "user"/"assistant" conventions
                 if msg_type in ('human', 'user'):
                     role = 'user'
                 elif msg_type == 'assistant':
                     role = 'assistant'
                 else:
                     continue
-                
-                # Content can be at top level or inside .message
                 raw = (obj.get('message') or {}).get('content') or obj.get('content', '')
                 text = get_text(raw)
-                
-                # Skip empty, very short, or tool-only turns
                 if len(text) < 10:
                     continue
-                
                 turns.append((role, text))
-    except Exception as e:
+    except Exception:
         pass
     return turns
 
 files = sys.argv[1:]
 for i, path in enumerate(files):
     turns = read_session(path)
-    session_name = os.path.basename(path)
     session_label = f"Session {i+1}" + (" (most recent)" if i == 0 else "")
-    
-    print(f"\n--- {session_label} [{session_name}] ---")
-    
+    print(f"\n--- {session_label} [{os.path.basename(path)}] ---")
     if not turns:
         print("  (no readable turns)")
         continue
-    
-    # First user message
     first_user = next((t for role, t in turns if role == 'user'), None)
     if first_user:
-        preview = first_user[:250].replace('\n', ' ')
-        print(f"  OPENING PROMPT: {preview}")
-    
-    # Last few turns to understand what was finished
+        print(f"  OPENING PROMPT: {first_user[:250].replace(chr(10), ' ')}")
     tail = turns[-4:]
     print(f"  CLOSING TURNS ({len(turns)} total turns):")
     for role, text in tail:
-        preview = text[:200].replace('\n', ' ')
-        print(f"    [{role.upper()}]: {preview}")
-
+        print(f"    [{role.upper()}]: {text[:200].replace(chr(10), ' ')}")
 PYEOF
 
 echo ""

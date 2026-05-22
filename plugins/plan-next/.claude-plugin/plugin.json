@@ -1,0 +1,11 @@
+{
+  "name": "plan-next",
+  "version": "1.0.0",
+  "description": "Smart session-continuation skill. Invoke /plan or /plan-next to auto-detect the next stage from your plan file and session history, and begin it immediately — no retyping required. Supports /plan <stage> to jump to a specific stage.",
+  "author": {
+    "name": "Jay Fox",
+    "email": "jjay56883@gmail.com"
+  },
+  "requires": ["python3"],
+  "keywords": ["plan", "session", "continuation", "stages", "workflow"]
+}
