@@ -1,0 +1,23 @@
+# /pause-ignore — bypass safe-pause subscription usage checks for a session
+#
+# Usage:
+#   /pause-ignore          — ignore for 5 hours (default)
+#   /pause-ignore 2h       — ignore for 2 hours
+#   /pause-ignore 30m      — ignore for 30 minutes
+#   /pause-ignore 3        — ignore for 3 hours (integer = hours)
+
+description = "Bypass subscription-usage pause checks for a configurable duration (default: 5 hours). Use when you want to continue despite high usage."
+
+prompt = """
+The user wants to bypass safe-pause subscription usage checks.
+
+Parse the argument (if any) from the user's message:
+- No argument → 5 hours
+- Ends with 'h' (e.g. "2h") → that many hours
+- Ends with 'm' (e.g. "30m") → that many minutes
+- Plain integer (e.g. "3") → that many hours
+
+Compute the unix timestamp for (now + duration) and write it to ~/.claude/safeclaude/ignore-until as a plain integer, creating the directory if needed. Use the Bash tool to do this.
+
+After writing the file, tell the user: "Subscription usage pause checks suppressed until [human-readable time]. Delete ~/.claude/safeclaude/ignore-until to re-enable."
+"""

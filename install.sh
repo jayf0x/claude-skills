@@ -3,7 +3,7 @@
 #
 # Usage:
 #   ./install.sh                    — install all plugins
-#   ./install.sh pause-claude-code  — install one plugin
+#   ./install.sh safe-pause  — install one plugin
 #   ./install.sh uninstall <name>   — uninstall a plugin
 set -euo pipefail
 
@@ -19,7 +19,7 @@ Usage:
   ./install.sh uninstall               uninstall all plugins
   ./install.sh uninstall <plugin>      uninstall one plugin
 
-Plugins: pause-claude-code, plan-next
+Plugins: safe-pause, plan-next
 EOF
 }
 

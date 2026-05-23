@@ -9,8 +9,8 @@
   },
   "plugins": [
     {
-      "name": "pause-claude-code",
-      "source": "./plugins/pause-claude-code",
+      "name": "safe-pause",
+      "source": "./plugins/safe-pause",
       "description": "PreToolUse hook that warns and then blocks tool calls when the context window approaches its limit, preventing mid-task session death."
     },
     {

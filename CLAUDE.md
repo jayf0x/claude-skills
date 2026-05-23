@@ -47,7 +47,7 @@ Then the instructions Claude follows when the skill runs.
 
 For skills with only a SKILL.md + scripts — copy to `~/.claude/skills/<name>/` and commands to `~/.claude/commands/`.
 
-For hook-based skills (like `pause-claude-code`) — also patch `~/.claude/settings.json`. See [plugins/pause-claude-code/install.sh](plugins/pause-claude-code/install.sh).
+For hook-based skills (like `safe-pause`) — also patch `~/.claude/settings.json`. See [plugins/safe-pause/install.sh](plugins/safe-pause/install.sh).
 
 **5. Register in marketplace**
 

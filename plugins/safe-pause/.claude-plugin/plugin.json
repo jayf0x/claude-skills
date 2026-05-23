@@ -1,0 +1,11 @@
+{
+  "name": "safe-pause",
+  "version": "2.0.0",
+  "description": "Warns and blocks tool calls when Claude.ai subscription utilization (five_hour or seven_day) crosses configurable thresholds. Requires the bundled Chrome extension + local bridge server to read actual usage from the API.",
+  "author": {
+    "name": "Jay Fox",
+    "email": "jjay56883@gmail.com"
+  },
+  "requires": ["jq", "curl", "python3"],
+  "keywords": ["usage", "quota", "subscription", "hook", "guard", "pause", "safety"]
+}
