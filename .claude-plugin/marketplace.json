@@ -17,6 +17,11 @@
       "name": "plan-next",
       "source": "./plugins/plan-next",
       "description": "Smart session-continuation skill. Reads your plan file and session history to auto-detect the next stage and begin it immediately."
+    },
+    {
+      "name": "silicon-duck",
+      "source": "./plugins/silicon-duck",
+      "description": "Always-on rubber duck that prepends a CIP clarity score (Constraints / Intent / Provenance, 1–5 each) before every reply so you can track how well-specified the conversation is."
     }
   ]
 }
