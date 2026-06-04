@@ -1,0 +1,18 @@
+# /kronny — grant a time-limited auto-approve window
+#
+# Usage:
+#   /kronny              — allow everything for 5 minutes
+#   /kronny 5            — same
+#   /kronny 15 "gh *"   — allow bash commands matching "gh *" for 15 minutes
+#   /kronny -1           — allow everything for 24 hours
+
+description = "Set a time-limited auto-approve window so Claude can run tools without permission prompts. Pattern defaults to * (all tools). Pass a bash glob to restrict to matching commands."
+
+prompt = """
+Run this command via the Bash tool, passing the user's arguments through verbatim:
+
+  python3 ~/.claude/kronny/kronny.py $ARGUMENTS
+
+Show the user the output line from the command (it describes what was set and until when).
+Do not add explanation unless the command errors.
+"""

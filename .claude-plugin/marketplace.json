@@ -22,6 +22,11 @@
       "name": "silicon-duck",
       "source": "./plugins/silicon-duck",
       "description": "Always-on rubber duck that prepends a CIP clarity score (Constraints / Intent / Provenance, 1–5 each) before every reply so you can track how well-specified the conversation is."
+    },
+    {
+      "name": "kronny",
+      "source": "./plugins/kronny",
+      "description": "Grants time-limited auto-approve windows via a PreToolUse hook. /kronny [minutes] [\"pattern\"] — no session restart required."
     }
   ]
 }

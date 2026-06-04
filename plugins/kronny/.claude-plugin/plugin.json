@@ -1,0 +1,11 @@
+{
+  "name": "kronny",
+  "version": "1.0.0",
+  "description": "Grants time-limited auto-approve windows via a PreToolUse hook. /kronny [minutes] [\"pattern\"] — no session restart required.",
+  "author": {
+    "name": "Jay Verstraete",
+    "email": "jonatanverstraete@outlook.com"
+  },
+  "requires": ["python3"],
+  "keywords": ["hook", "approve", "permissions", "auto-approve", "timer", "window"]
+}
