@@ -1,4 +1,6 @@
-# jayf0x/skills
+# Trial Skills marketplace
+
+This is a repo for skills I test usage. Not all skills might be as productive. Most used skill get their own repo, like [kronnt](https://github.com/jayf0x/kronny).
 
 Claude Code skill marketplace — productivity upgrades you install once and forget about.
 
