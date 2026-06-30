@@ -1,29 +1,50 @@
 # Trial Skills marketplace
 
-This is a repo for skills I test usage. Not all skills might be as productive. Most used skill get their own repo, like [kronny](https://github.com/jayf0x/kronny).
+A repo for skills I test. Most-used skills get their own repo, like [kronny](https://github.com/jayf0x/kronny).
 
-Claude Code skill marketplace — productivity upgrades you install once and forget about.
+## Install
 
-## Add marketplace
+```bash
+git clone https://github.com/jayf0x/claude-skills
+cd claude-skills
+
+# all at once
+./install.sh
+
+# or one at a time
+./plugins/silicon-duck/install.sh
+./plugins/kronny/install.sh
+./plugins/safe-pause/install.sh
+./plugins/plan-next/install.sh
+./plugins/simple-name/install.sh
+```
+
+Restart Claude Code after installing.
+
+### Via marketplace (Claude Code desktop/web only)
 
 ```
 /plugin marketplace add @jayf0x/skills
+/plugin install simple-name
 ```
 
-Then install any skill:
-
-```bash
-/plugin install silicon-duck
-/plugin install kronny
-/plugin install safe-pause
-/plugin install plan-next
-```
+> `/plugin` is not available in all environments — use the bash install above if that command isn't recognized.
 
 ---
 
 ## Skills
 
-### 🦆 SiliconDuck — always-on clarity rater
+### 🏷 simple-name — auto-rename sessions
+
+Every new session is renamed to `{repo}: {MM/DD}-{hash}` at startup. No more "General Session" or 200 unnamed tabs.
+
+Example: `claude-skills: 06/30-mr0jd4j7`
+
+Implemented as a `SessionStart` hook — fires automatically, no commands needed.
+
+---
+
+### 🦆 silicon-duck — always-on clarity rater
 
 Rates every conversation before Claude replies using a three-factor **CIP score** (Constraints / Intent / Provenance, 1–5). Catch underspecified prompts before they waste a whole run.
 
@@ -32,36 +53,34 @@ Rates every conversation before Claude replies using a three-factor **CIP score*
 /duck enable    # bring it back
 ```
 
-No configuration needed — active the moment it's installed.
-
 ---
 
-### ⏱ Kronny — time-limited auto-approve windows
+### ⏱ kronny — time-limited auto-approve windows
 
-Tired of approving the same tool call twenty times in a row? Kronny lets you pre-authorize tool calls for a fixed window so Claude can work uninterrupted.
+Pre-authorize tool calls for a fixed window so Claude can work uninterrupted.
 
 ```
 /kronny              # approve everything for 5 min
 /kronny 15           # 15-minute window
-/kronny 15 "gh *"    # only commands matching "gh *" for 15 min
-/kronny -1           # 24-hour window (trust mode)
+/kronny 15 "gh *"    # only commands matching "gh *"
+/kronny -1           # 24-hour window
 ```
 
-Implemented as a `PreToolUse` hook — zero session restarts, zero config files to hand-edit.
+`PreToolUse` hook — zero restarts, zero config files.
 
 ---
 
 ### 🛑 safe-pause — context-window guardian
 
-Warns at 80% context usage, blocks at 95%. Prevents Claude from dying mid-task on a long run and losing all its work.
+Warns at 80% context usage, blocks at 95%. Prevents Claude from dying mid-task on a long run.
 
-Requires the bundled Chrome extension + local bridge server to read subscription utilization from the Claude.ai API.
+Requires the bundled Chrome extension + local bridge server.
 
 ---
 
 ### 📋 plan-next — session continuity
 
-`/plan` picks up exactly where you left off. Reads your plan file and session history, auto-detects the next stage, and begins it — no retyping required.
+`/plan` picks up exactly where you left off. Reads your plan file and session history, auto-detects the next stage.
 
 ```
 /plan            # resume next stage
@@ -75,6 +94,7 @@ Requires the bundled Chrome extension + local bridge server to read subscription
 
 | Skill | Requires |
 |-------|----------|
+| simple-name | `node`, `git` (falls back to `date` if node missing) |
 | silicon-duck | nothing |
 | kronny | `python3` |
 | safe-pause | `jq`, Chrome extension, local bridge |
@@ -82,26 +102,12 @@ Requires the bundled Chrome extension + local bridge server to read subscription
 
 ---
 
-## Install without the marketplace
-
-```bash
-git clone https://github.com/jayf0x/skills
-cd skills
-
-# all at once
-./install.sh
-
-# or one at a time
-./plugins/silicon-duck/install.sh
-./plugins/kronny/install.sh
-./plugins/safe-pause/install.sh
-./plugins/plan-next/install.sh
-```
-
 ## Uninstall
 
 ```bash
-./install.sh uninstall                      # all
-./install.sh uninstall kronny               # one
-./plugins/silicon-duck/uninstall.sh         # direct
+./plugins/simple-name/uninstall.sh
+./plugins/silicon-duck/uninstall.sh
+./plugins/kronny/uninstall.sh
+./plugins/safe-pause/uninstall.sh
+./plugins/plan-next/uninstall.sh
 ```
