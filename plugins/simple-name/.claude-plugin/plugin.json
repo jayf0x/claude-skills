@@ -1,0 +1,10 @@
+{
+  "name": "simple-name",
+  "version": "1.0.0",
+  "description": "Auto-renames sessions to {repo}: {MM/DD}-{hash} on session start.",
+  "author": {
+    "name": "Jay Fox",
+    "email": "jjay56883@gmail.com"
+  },
+  "keywords": ["session", "rename", "naming", "auto"]
+}

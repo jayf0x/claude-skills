@@ -27,6 +27,11 @@
       "name": "kronny",
       "source": "./plugins/kronny",
       "description": "Grants time-limited auto-approve windows via a PreToolUse hook. /kronny [minutes] [\"pattern\"] — no session restart required."
+    },
+    {
+      "name": "simple-name",
+      "source": "./plugins/simple-name",
+      "description": "SessionStart hook that auto-renames sessions to {repo}: {MM/DD}-{hash} — keeps session lists readable without any manual effort."
     }
   ]
 }
