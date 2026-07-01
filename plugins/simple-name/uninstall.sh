@@ -3,13 +3,12 @@
 set -euo pipefail
 
 SESSION_HOOK="${HOME}/.claude/simple-name-session.sh"
-PRETOOL_HOOK="${HOME}/.claude/simple-name-pretool.sh"
-PENDING="${HOME}/.claude/simple-name-pending"
+LOG="${HOME}/.claude/simple-name-debug.log"
 SETTINGS="${HOME}/.claude/settings.json"
 
 echo "Uninstalling simple-name..."
 
-for f in "${SESSION_HOOK}" "${PRETOOL_HOOK}" "${PENDING}"; do
+for f in "${SESSION_HOOK}" "${LOG}"; do
   [[ -f "$f" ]] && rm "$f" && echo "  Removed: $f"
 done
 
@@ -23,4 +22,4 @@ if [[ -f "${SETTINGS}" ]]; then
 fi
 
 echo ""
-echo "Done. Restart Claude Code for changes to take effect."
+echo "Done. Restart Claude Code / Claude Desktop for changes to take effect."
