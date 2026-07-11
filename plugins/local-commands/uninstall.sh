@@ -6,7 +6,7 @@ SETTINGS="${HOME}/.claude/settings.json"
 
 echo "Uninstalling local-commands..."
 
-rm -f "${HOME}/.claude/commands/cmds-collect.md" "${HOME}/.claude/commands/cmds-compress.md"
+rm -f "${HOME}/.claude/commands/cmds-collect.md" "${HOME}/.claude/commands/cmds-compress.md" "${HOME}/.claude/commands/cmds-harvest.md"
 rm -rf "${HOME}/.claude/cache/local-commands"
 
 if [[ -f "$SETTINGS" ]] && command -v jq &>/dev/null; then

@@ -11,7 +11,7 @@ Compress all collected session dumps into a single cheat sheet that a SessionSta
    - **Duplicate?** Merge duplicates and near-duplicates into one canonical entry; keep the best-explained variant.
    - **Clean of local values?** Replace project-specific paths, repo names, ports, tokens with placeholders like `<project-root>`, `<port>`. Machine-level facts that ARE the point (e.g. "this machine uses bun") stay as-is.
 4. Group surviving entries by topic (testing, package management, git/GitHub, system, etc.).
-5. Write the result to `~/.claude/cache/local-commands/all-local-commands.md`. Start with a one-line title (`# Local Commands Cheat Sheet`), then the grouped entries, same per-entry format as the dumps (title, one-line context, fenced command). Keep it tight — this whole file is injected into every session's context, so every line costs tokens.
+5. If `~/.claude/cache/local-commands/all-local-commands.md` exists, back it up first: `cp` it to `all-local-commands.prev.md` (overwriting any older backup). Then write the result to `~/.claude/cache/local-commands/all-local-commands.md`. Start with a one-line title (`# Local Commands Cheat Sheet`), then the grouped entries, same per-entry format as the dumps (title, one-line context, fenced command). Keep it tight — this whole file is injected into every session's context, so every line costs tokens.
 6. Delete the processed `cmd-*.md` files (only the ones you read; leave any created mid-run).
 7. Report: how many entries in, how many kept, path of the cheat sheet.
 
