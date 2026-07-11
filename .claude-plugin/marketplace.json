@@ -32,6 +32,11 @@
       "name": "simple-name",
       "source": "./plugins/simple-name",
       "description": "SessionStart hook that auto-renames sessions to {repo}: {MM/DD}-{hash} — keeps session lists readable without any manual effort."
+    },
+    {
+      "name": "local-commands",
+      "source": "./plugins/local-commands",
+      "description": "Collect non-obvious shell commands per session (/cmds-collect) and compress them into an always-available cheat-sheet skill (/cmds-compress)."
     }
   ]
 }

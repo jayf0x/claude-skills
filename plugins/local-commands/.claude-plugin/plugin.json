@@ -1,0 +1,9 @@
+{
+  "name": "local-commands",
+  "version": "0.1.0",
+  "description": "Collect non-obvious shell commands from sessions (/cmds-collect) and compress them into a globally-active cheat-sheet skill (/cmds-compress).",
+  "author": {
+    "name": "Jay Fox"
+  },
+  "keywords": ["commands", "cli", "cheatsheet", "bash", "memory"]
+}
