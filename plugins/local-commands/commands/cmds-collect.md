@@ -2,20 +2,28 @@
 
 Review the entire current session and collect shell/CLI commands worth remembering, then write them to a dated markdown file. This is a raw dump — do NOT read, compare with, or dedupe against existing files.
 
-## What to include
+## The bar: would this help in a *different* project?
 
-Only commands that are **non-obvious or system-specific** — things a fresh agent would not guess on the first try:
+The test is not "was this useful today" — almost everything is. The test is whether the **technique** transfers once you strip today's project name out of it. If the only thing worth saving is "this app's binary is called X" or "this repo's script is called Y," that's not a command worth collecting — it's a fact about one repo that will be stale or irrelevant elsewhere.
 
-- Commands that needed a specific tool variant (e.g. `bun` instead of `npm`, `gsed` instead of `sed`)
-- Test/build invocations that needed extra flags, env vars, or a specific node/python version
-- Multi-step incantations that took trial and error to get right
-- Project- or machine-specific setup, ports, paths, services
+Concretely:
+
+- **Package.json/Makefile script aliases are not commands.** `bun run verify`, `npm run kill`, `make build` teach nothing by themselves — the agent can already read package.json. Only collect what's *inside* the alias, and only if those underlying flags are themselves non-obvious (e.g. `tauri build --debug --bundles app` to skip DMG bundling because `hdiutil` fails in sandboxed shells — the flag choice is the non-obvious part, not the fact that it's wrapped in a script).
+- **Machine/tool-chain facts generalize; project facts don't.** "`python3 -c 'import Quartz'` fails here, use Swift/CoreGraphics instead" is a machine fact — keep it, but drop the specific display-listing code unless the technique itself is the point. "This app persists state at `~/Library/Application Support/<AppName>/db`" is a project fact — drop it, even if the SQL is well-written.
+- **Shell/tool gotchas generalize; the file/pattern you hit it on doesn't.** "zsh glob-expands unquoted `--include=*.tsx` and errors" is worth keeping. Which directory you were grepping is not — strip it or replace it with a placeholder.
+- When a command is worth keeping but names this project's paths, binaries, or identifiers, **abstract them** into placeholders (`<binary-name>`, `<project-root>`, `<db-path>`) rather than dropping the technique entirely.
 
 ## What to exclude
 
 - Standard commands any agent knows (`git status`, `ls`, `npm install`)
+- Package/Makefile script aliases whose name is the only non-obvious part (see above)
 - Commands so case-specific they'll never recur (one-off greps, debugging a single typo)
+- Facts about this specific app/repo (its binary name, its DB schema, its file layout) that don't teach a reusable technique
 - Commands that failed and were abandoned
+
+## When to write nothing
+
+If a session was spent entirely inside one project using that project's own scripts and conventions, the honest output is often **zero entries** — not a padded list of that project's tooling. Don't strain to find something to save. An empty result is a correct result; say so and don't create the file.
 
 ## Output
 
