@@ -1,0 +1,14 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "devDependencies": {
+        "taglify": "^1.0.5",
+      },
+    },
+  },
+  "packages": {
+    "taglify": ["taglify@1.0.5", "", {}, "sha512-VCE0ZQxA9/inkME6yhm3zTtxDPUs/pZ4bFiJSMMQGWXo9HTg4TzsRHFFQLQGMJ+3Ba9hYmkAH7ffNjyj0ZSoxg=="],
+  }
+}

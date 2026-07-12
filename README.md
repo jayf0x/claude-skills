@@ -4,6 +4,7 @@ A repo for skills I test. Most-used skills get their own repo, like [kronny](htt
 
 ## Install
 
+<!-- INSTALL:START -->
 ```bash
 git clone https://github.com/jayf0x/claude-skills
 cd claude-skills
@@ -12,12 +13,14 @@ cd claude-skills
 ./install.sh
 
 # or one at a time
-./plugins/silicon-duck/install.sh
 ./plugins/kronny/install.sh
-./plugins/safe-pause/install.sh
+./plugins/local-commands/install.sh
 ./plugins/plan-next/install.sh
+./plugins/safe-pause/install.sh
+./plugins/silicon-duck/install.sh
 ./plugins/simple-name/install.sh
 ```
+<!-- INSTALL:END -->
 
 Restart Claude Code after installing.
 
@@ -90,24 +93,15 @@ Requires the bundled Chrome extension + local bridge server.
 
 ---
 
-## Requirements
-
-| Skill | Requires |
-|-------|----------|
-| simple-name | `node`, `git` (falls back to `date` if node missing) |
-| silicon-duck | nothing |
-| kronny | `python3` |
-| safe-pause | `jq`, Chrome extension, local bridge |
-| plan-next | `python3` |
-
----
-
 ## Uninstall
 
+<!-- UNINSTALL:START -->
 ```bash
-./plugins/simple-name/uninstall.sh
-./plugins/silicon-duck/uninstall.sh
 ./plugins/kronny/uninstall.sh
-./plugins/safe-pause/uninstall.sh
+./plugins/local-commands/uninstall.sh
 ./plugins/plan-next/uninstall.sh
+./plugins/safe-pause/uninstall.sh
+./plugins/silicon-duck/uninstall.sh
+./plugins/simple-name/uninstall.sh
 ```
+<!-- UNINSTALL:END -->

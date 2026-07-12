@@ -1,0 +1,6 @@
+{
+  "type": "module",
+  "devDependencies": {
+    "taglify": "^1.0.5"
+  }
+}
