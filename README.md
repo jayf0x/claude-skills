@@ -13,6 +13,7 @@ cd claude-skills
 ./install.sh
 
 # or one at a time
+./plugins/commit-mauw/install.sh
 ./plugins/kronny/install.sh
 ./plugins/local-commands/install.sh
 ./plugins/plan-next/install.sh
@@ -93,10 +94,28 @@ Requires the bundled Chrome extension + local bridge server.
 
 ---
 
+### 🐈 commit-mauw — commit as your co-pilot's persona
+
+Attributes git commits to a configurable non-human co-pilot (a cat, a dog, whatever) instead of
+you or Claude — in any repo, no per-repo setup. Fires automatically whenever Claude is about to
+commit, or explicitly via `/commit-mauw`.
+
+```
+/commit-mauw     # commit staged changes as the configured persona
+```
+
+All config lives in one file, `~/.claude/skills/commit-mauw/SKILL.md` — edit the identity block
+and the "Voice" section directly, no separate config file. A wrapper script
+(`scripts/commit.sh`) does the actual identity switch per-commit and always reverts afterward,
+even on failure, so reliability doesn't depend on Claude running commands in the right order.
+
+---
+
 ## Uninstall
 
 <!-- UNINSTALL:START -->
 ```bash
+./plugins/commit-mauw/uninstall.sh
 ./plugins/kronny/uninstall.sh
 ./plugins/local-commands/uninstall.sh
 ./plugins/plan-next/uninstall.sh

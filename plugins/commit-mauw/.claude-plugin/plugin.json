@@ -1,0 +1,10 @@
+{
+  "name": "commit-mauw",
+  "version": "1.0.0",
+  "description": "Attributes git commits to a configurable non-human co-pilot persona (cat, dog, or your own), in its voice, in every repo. Edit the identity block in the installed SKILL.md directly to customize.",
+  "author": {
+    "name": "Jay Fox",
+    "email": "jjay56883@gmail.com"
+  },
+  "keywords": ["git", "commit", "persona", "identity", "co-pilot"]
+}

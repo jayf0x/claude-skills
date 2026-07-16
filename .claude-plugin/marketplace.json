@@ -37,6 +37,11 @@
       "name": "local-commands",
       "source": "./plugins/local-commands",
       "description": "Collect non-obvious shell commands per session (/cmds-collect) and compress them into an always-available cheat-sheet skill (/cmds-compress)."
+    },
+    {
+      "name": "commit-mauw",
+      "source": "./plugins/commit-mauw",
+      "description": "Attributes git commits to a configurable non-human co-pilot persona (cat, dog, or your own), in its voice, in every repo. Edit the identity block in the installed SKILL.md directly to customize."
     }
   ]
 }

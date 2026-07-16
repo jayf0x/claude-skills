@@ -1,0 +1,13 @@
+#!/bin/sh
+# Strips any Claude/Anthropic co-author trailers from the commit message,
+# regardless of what wrote the commit. Enabled only for the duration of a
+# commit.sh-driven commit, via a temporary core.hooksPath pointing here.
+msg_file="$1"
+
+sed -i.bak -E '/^Co-authored-by:.*(claude|anthropic)/Id' "$msg_file"
+rm -f "$msg_file.bak"
+
+sed -i.bak -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$msg_file"
+rm -f "$msg_file.bak"
+
+exit 0
