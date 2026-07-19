@@ -5,6 +5,7 @@ set -euo pipefail
 STATE_DIR="$HOME/.claude/kronny"
 SETTINGS="$HOME/.claude/settings.json"
 CMD_DEST="$HOME/.claude/commands/kronny.toml"
+CMD_TTL_DEST="$HOME/.claude/commands/kronny-ttl.toml"
 SKILLS_DIR="$HOME/.claude/skills/kronny"
 
 echo "Uninstalling kronny..."
@@ -17,10 +18,14 @@ for f in kronny-hook.py kronny.py; do
   fi
 done
 
-# Remove slash command
+# Remove slash commands
 if [[ -f "$CMD_DEST" ]]; then
   rm "$CMD_DEST"
   echo "  Removed: $CMD_DEST"
+fi
+if [[ -f "$CMD_TTL_DEST" ]]; then
+  rm "$CMD_TTL_DEST"
+  echo "  Removed: $CMD_TTL_DEST"
 fi
 
 # Remove skill

@@ -231,6 +231,33 @@ class TestCLI(unittest.TestCase):
         r = self._run_cli("-5")
         self.assertNotEqual(r.returncode, 0)
 
+    # ── status ───────────────────────────────────────────────────────────────
+
+    def test_status_no_state_file(self):
+        r = self._run_cli("status")
+        self.assertEqual(r.returncode, 0)
+        self.assertIn("No active window", r.stdout)
+
+    def test_status_active_window(self):
+        with open(self.state_file, "w") as f:
+            json.dump({"expires_at": int(time.time()) + 300, "pattern": "*", "notified": False}, f)
+        r = self._run_cli("status")
+        self.assertEqual(r.returncode, 0)
+        self.assertIn("left", r.stdout)
+        self.assertIn("ALL tools", r.stdout)
+
+    def test_status_expired_window(self):
+        with open(self.state_file, "w") as f:
+            json.dump({"expires_at": int(time.time()) - 5, "pattern": "*", "notified": False}, f)
+        r = self._run_cli("status")
+        self.assertEqual(r.returncode, 0)
+        self.assertIn("expired", r.stdout)
+
+    def test_status_does_not_write_state(self):
+        r = self._run_cli("status")
+        self.assertEqual(r.returncode, 0)
+        self.assertFalse(os.path.exists(self.state_file))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

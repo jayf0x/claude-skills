@@ -61,10 +61,11 @@ PYEOF
   echo "  Registered PreToolUse hook in settings.json"
 fi
 
-# ── 3. Slash command ──────────────────────────────────────────────────────
+# ── 3. Slash commands ─────────────────────────────────────────────────────
 mkdir -p "$COMMANDS_DIR"
 cp "$SCRIPT_DIR/commands/kronny.toml" "$COMMANDS_DIR/kronny.toml"
-echo "  Command: $COMMANDS_DIR/kronny.toml"
+cp "$SCRIPT_DIR/commands/kronny-ttl.toml" "$COMMANDS_DIR/kronny-ttl.toml"
+echo "  Commands: $COMMANDS_DIR/kronny.toml, $COMMANDS_DIR/kronny-ttl.toml"
 
 # ── 4. Skill ──────────────────────────────────────────────────────────────
 mkdir -p "$SKILLS_DIR"
@@ -79,3 +80,4 @@ echo "  /kronny              — approve everything for 5 min"
 echo "  /kronny 15           — approve everything for 15 min"
 echo "  /kronny 15 \"gh *\"    — approve bash 'gh *' for 15 min"
 echo "  /kronny -1           — approve everything for 24 h"
+echo "  /kronny-ttl          — show time left on the current window"
