@@ -2,12 +2,19 @@
 """Kronny PreToolUse hook — auto-approves tool calls during active windows.
 
 Reads state from KRONNY_STATE_FILE (env) or ~/.claude/kronny/state.json.
-State schema: {"expires_at": <unix_ts>, "pattern": "<glob>", "notified": <bool>}
+State schema:
+  {"expires_at": <unix_ts>, "pattern": "<glob>", "notified": <bool>,
+   "session_id": "<uuid>"}
+
+The window only applies to the session that created it — the hook compares
+state["session_id"] against the session_id Claude Code passes on stdin, so a
+window opened in one session can't leak approval to another running session.
 
 Output (stdout, JSON):
-  {"decision": "approve"}           — inside active window, pattern matched
+  {"hookSpecificOutput": {..., "permissionDecision": "allow"}}
+                                     — inside active window, session+pattern matched
   {"additionalContext": "..."}      — window just expired (once only)
-  (empty)                           — no active window / pattern mismatch
+  (empty)                           — no active window / session/pattern mismatch
 
 Always exits 0 — must never crash Claude Code.
 """
@@ -74,11 +81,22 @@ def main():
                 }))
             sys.exit(0)
 
+        session_id = state.get("session_id", "")
+        call_session_id = tool_call.get("session_id", "")
+        if session_id and session_id != call_session_id:
+            sys.exit(0)
+
         tool_name = tool_call.get("tool_name", "")
         tool_input = tool_call.get("tool_input", {})
 
         if _matches(pattern, tool_name, tool_input):
-            print(json.dumps({"decision": "approve"}))
+            print(json.dumps({
+                "hookSpecificOutput": {
+                    "hookEventName": "PreToolUse",
+                    "permissionDecision": "allow",
+                    "permissionDecisionReason": "kronny auto-approve window",
+                }
+            }))
 
     except Exception:
         pass

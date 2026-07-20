@@ -49,19 +49,20 @@ class TestHook(unittest.TestCase):
 
     # ── active window ────────────────────────────────────────────────────────
 
+    def _decision(self, stdout):
+        return json.loads(stdout).get("hookSpecificOutput", {}).get("permissionDecision")
+
     def test_active_window_wildcard_approves_bash(self):
         self._write_state({"expires_at": int(time.time()) + 300, "pattern": "*", "notified": False})
         r = self._run_hook({"tool_name": "Bash", "tool_input": {"command": "ls -la"}})
         self.assertEqual(r.returncode, 0)
-        out = json.loads(r.stdout)
-        self.assertEqual(out.get("decision"), "approve")
+        self.assertEqual(self._decision(r.stdout), "allow")
 
     def test_active_window_wildcard_approves_non_bash(self):
         self._write_state({"expires_at": int(time.time()) + 300, "pattern": "*", "notified": False})
         r = self._run_hook({"tool_name": "Read", "tool_input": {"file_path": "/tmp/x"}})
         self.assertEqual(r.returncode, 0)
-        out = json.loads(r.stdout)
-        self.assertEqual(out.get("decision"), "approve")
+        self.assertEqual(self._decision(r.stdout), "allow")
 
     # ── pattern matching ─────────────────────────────────────────────────────
 
@@ -69,7 +70,7 @@ class TestHook(unittest.TestCase):
         self._write_state({"expires_at": int(time.time()) + 300, "pattern": "gh *", "notified": False})
         r = self._run_hook({"tool_name": "Bash", "tool_input": {"command": "gh repo list"}})
         self.assertEqual(r.returncode, 0)
-        self.assertEqual(json.loads(r.stdout).get("decision"), "approve")
+        self.assertEqual(self._decision(r.stdout), "allow")
 
     def test_pattern_match_skips_non_matching_bash_command(self):
         self._write_state({"expires_at": int(time.time()) + 300, "pattern": "gh *", "notified": False})
@@ -86,7 +87,38 @@ class TestHook(unittest.TestCase):
     def test_glob_star_matches_any_suffix(self):
         self._write_state({"expires_at": int(time.time()) + 300, "pattern": "git *", "notified": False})
         r = self._run_hook({"tool_name": "Bash", "tool_input": {"command": "git status"}})
-        self.assertEqual(json.loads(r.stdout).get("decision"), "approve")
+        self.assertEqual(self._decision(r.stdout), "allow")
+
+    # ── session scoping ──────────────────────────────────────────────────────
+
+    def test_matching_session_id_approves(self):
+        self._write_state({
+            "expires_at": int(time.time()) + 300, "pattern": "*", "notified": False,
+            "session_id": "session-a",
+        })
+        r = self._run_hook({
+            "tool_name": "Bash", "tool_input": {"command": "ls"}, "session_id": "session-a",
+        })
+        self.assertEqual(self._decision(r.stdout), "allow")
+
+    def test_other_session_id_is_silent(self):
+        self._write_state({
+            "expires_at": int(time.time()) + 300, "pattern": "*", "notified": False,
+            "session_id": "session-a",
+        })
+        r = self._run_hook({
+            "tool_name": "Bash", "tool_input": {"command": "ls"}, "session_id": "session-b",
+        })
+        self.assertEqual(r.returncode, 0)
+        self.assertEqual(r.stdout.strip(), "")
+
+    def test_missing_session_id_in_state_approves_any_session(self):
+        # Backward compat: state written before session scoping existed.
+        self._write_state({"expires_at": int(time.time()) + 300, "pattern": "*", "notified": False})
+        r = self._run_hook({
+            "tool_name": "Bash", "tool_input": {"command": "ls"}, "session_id": "session-b",
+        })
+        self.assertEqual(self._decision(r.stdout), "allow")
 
     # ── expiry ───────────────────────────────────────────────────────────────
 
@@ -170,6 +202,18 @@ class TestCLI(unittest.TestCase):
         self.assertFalse(state["notified"])
         now = int(time.time())
         self.assertAlmostEqual(state["expires_at"], now + 300, delta=5)
+
+    # ── session scoping ──────────────────────────────────────────────────────
+
+    def test_session_id_from_env_is_stored(self):
+        self.env["CLAUDE_CODE_SESSION_ID"] = "session-xyz"
+        self._run_cli("5")
+        self.assertEqual(self._read_state()["session_id"], "session-xyz")
+
+    def test_missing_session_id_env_stores_empty_string(self):
+        self.env.pop("CLAUDE_CODE_SESSION_ID", None)
+        self._run_cli("5")
+        self.assertEqual(self._read_state()["session_id"], "")
 
     # ── duration variants ────────────────────────────────────────────────────
 

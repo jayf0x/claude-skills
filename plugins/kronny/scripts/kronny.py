@@ -9,6 +9,9 @@ Usage:
   kronny.py status       # print time remaining on the current window, if any
 
 State dir: KRONNY_STATE_DIR (env) or ~/.claude/kronny/
+
+The window is scoped to the session that runs this command (via
+CLAUDE_CODE_SESSION_ID) — other concurrently-running sessions won't inherit it.
 """
 import json
 import os
@@ -76,8 +79,15 @@ def main():
     now = int(time.time())
     expires_at = now + minutes * 60
 
+    session_id = os.environ.get("CLAUDE_CODE_SESSION_ID", "")
+
     os.makedirs(STATE_DIR, exist_ok=True)
-    state = {"expires_at": expires_at, "pattern": pattern, "notified": False}
+    state = {
+        "expires_at": expires_at,
+        "pattern": pattern,
+        "notified": False,
+        "session_id": session_id,
+    }
     with open(STATE_FILE, "w") as f:
         json.dump(state, f)
 
