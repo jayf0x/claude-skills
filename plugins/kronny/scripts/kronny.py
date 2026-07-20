@@ -6,6 +6,7 @@ Usage:
   kronny.py 5            # same
   kronny.py 15 "gh *"   # allow bash commands matching "gh *" for 15 minutes
   kronny.py -1           # allow everything for 24 hours
+  kronny.py status       # print time remaining on the current window, if any
 
 State dir: KRONNY_STATE_DIR (env) or ~/.claude/kronny/
 """
@@ -20,8 +21,33 @@ STATE_DIR = os.environ.get("KRONNY_STATE_DIR", _DEFAULT_STATE_DIR)
 STATE_FILE = os.path.join(STATE_DIR, "state.json")
 
 
+def print_status():
+    try:
+        with open(STATE_FILE) as f:
+            state = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("[kronny] No active window.")
+        return
+
+    remaining = state["expires_at"] - int(time.time())
+    if remaining <= 0:
+        print("[kronny] No active window (expired).")
+        return
+
+    mins, secs = divmod(remaining, 60)
+    pattern = state.get("pattern", "*")
+    if pattern == "*":
+        print(f"[kronny] {mins}m{secs:02d}s left, ALL tools approved.")
+    else:
+        print(f"[kronny] {mins}m{secs:02d}s left, approving bash '{pattern}'.")
+
+
 def main():
     args = sys.argv[1:]
+
+    if args and args[0] == "status":
+        print_status()
+        return
 
     minutes = 5
     pattern = "*"

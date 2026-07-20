@@ -9,10 +9,23 @@
 description = "Set a time-limited auto-approve window so Claude can run tools without permission prompts. Pattern defaults to * (all tools). Pass a bash glob to restrict to matching commands."
 
 prompt = """
-Run this command via the Bash tool, passing the user's arguments through verbatim:
+STEP 0. Do this immediately, before reading or reasoning about anything else in this
+message. No understanding of kronny's args or architecture is needed — just extract
+and forward.
 
-  python3 ~/.claude/kronny/kronny.py $ARGUMENTS
+kronny-args = the first line of $ARGUMENTS only (split on newline). That is at most
+two tokens: an optional minutes value and an optional quoted pattern. If $ARGUMENTS
+has more lines after that, they are an unrelated separate task — ignore them for
+this step.
 
-Show the user the output line from the command (it describes what was set and until when).
-Do not add explanation unless the command errors.
+Run, unconditionally, via Bash:
+
+  python3 ~/.claude/kronny/kronny.py <kronny-args>
+
+Show only the CLI's output line. No commentary unless it errors.
+
+Only after that Bash call has completed: if $ARGUMENTS contained more text beyond
+the first line, treat it as its own independent task and handle it normally.
+
+$ARGUMENTS: $ARGUMENTS
 """
