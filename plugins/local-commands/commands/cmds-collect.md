@@ -1,6 +1,18 @@
 # /cmds-collect — dump this session's useful commands
 
-Review the entire current session and collect shell/CLI commands worth remembering, then write them to a dated markdown file. This is a raw dump — do NOT read, compare with, or dedupe against existing files.
+Collect shell/CLI commands worth remembering from the current session, then write them to a dated markdown file. This is a raw dump — do NOT read, compare with, or dedupe against existing files.
+
+## Step 0: get the candidate list mechanically
+
+Do NOT recall commands from memory or by re-reading the transcript yourself — that's error-prone (mistyped flags, invented commands). Instead run:
+
+```bash
+python3 ~/.claude/cache/local-commands/scripts/extract-commands.py
+```
+
+This prints one candidate command per line (tab-prefixed with an occurrence count), mechanically extracted and pre-filtered (length, common noise commands, multi-line scripts) from this session's own transcript. If it prints nothing after the `#` summary line, there are no candidates — skip straight to "When to write nothing" below.
+
+For each candidate, use your memory of the session (why the command was run, what problem it solved) to judge it against the bar below — the script does extraction, you do judgment.
 
 ## The bar: would this help in a *different* project?
 
