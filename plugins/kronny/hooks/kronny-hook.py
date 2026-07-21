@@ -81,9 +81,13 @@ def main():
                 }))
             sys.exit(0)
 
+        # Strict equality (not "if session_id and ...") — a window written
+        # without a session_id (e.g. CLAUDE_CODE_SESSION_ID unset when /kronny
+        # ran) must not silently become global. Every session must match to
+        # get auto-approved, including matching on missing session_id.
         session_id = state.get("session_id", "")
         call_session_id = tool_call.get("session_id", "")
-        if session_id and session_id != call_session_id:
+        if session_id != call_session_id:
             sys.exit(0)
 
         tool_name = tool_call.get("tool_name", "")

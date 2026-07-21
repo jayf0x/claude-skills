@@ -112,12 +112,21 @@ class TestHook(unittest.TestCase):
         self.assertEqual(r.returncode, 0)
         self.assertEqual(r.stdout.strip(), "")
 
-    def test_missing_session_id_in_state_approves_any_session(self):
-        # Backward compat: state written before session scoping existed.
+    def test_missing_session_id_in_state_does_not_approve_other_session(self):
+        # A window written without a session_id (e.g. CLAUDE_CODE_SESSION_ID
+        # was unset when /kronny ran) must not leak approval to every session.
         self._write_state({"expires_at": int(time.time()) + 300, "pattern": "*", "notified": False})
         r = self._run_hook({
             "tool_name": "Bash", "tool_input": {"command": "ls"}, "session_id": "session-b",
         })
+        self.assertEqual(r.returncode, 0)
+        self.assertEqual(r.stdout.strip(), "")
+
+    def test_missing_session_id_both_sides_approves(self):
+        # If the host never supplies a session_id at all, both sides are
+        # empty and the window still functions (no session concept to scope by).
+        self._write_state({"expires_at": int(time.time()) + 300, "pattern": "*", "notified": False})
+        r = self._run_hook({"tool_name": "Bash", "tool_input": {"command": "ls"}})
         self.assertEqual(self._decision(r.stdout), "allow")
 
     # ── expiry ───────────────────────────────────────────────────────────────
