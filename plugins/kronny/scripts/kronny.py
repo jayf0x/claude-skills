@@ -7,6 +7,7 @@ Usage:
   kronny.py 15 "gh *"   # allow bash commands matching "gh *" for 15 minutes
   kronny.py -1           # allow everything for 24 hours
   kronny.py status       # print time remaining on the current window, if any
+  kronny.py ttl          # alias for status
 
 State dir: KRONNY_STATE_DIR (env) or ~/.claude/kronny/
 
@@ -48,7 +49,7 @@ def print_status():
 def main():
     args = sys.argv[1:]
 
-    if args and args[0] == "status":
+    if args and args[0] in ("status", "ttl"):
         print_status()
         return
 

@@ -1,13 +1,33 @@
 #!/usr/bin/env bash
 # install.sh — Install all plugins or a specific one
 #
-# Usage:
+# One-line install (clones a temp copy, installs, cleans up):
+#   curl -fsSL https://raw.githubusercontent.com/jayf0x/claude-skills/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/jayf0x/claude-skills/main/install.sh | bash -s -- kronny
+#
+# Local clone:
 #   ./install.sh                    — install all plugins
 #   ./install.sh safe-pause  — install one plugin
 #   ./install.sh uninstall <name>   — uninstall a plugin
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_URL="https://github.com/jayf0x/claude-skills.git"
+
+# BASH_SOURCE is unset when bash is invoked from stdin (curl | bash); default
+# to empty so `set -u` doesn't trip, and so we fall through to the clone path.
+here="$(cd "$(dirname "${BASH_SOURCE[0]:-}")" 2>/dev/null && pwd)" || here=""
+if [[ -z "$here" || ! -d "$here/plugins" ]]; then
+  if ! command -v git >/dev/null 2>&1; then
+    echo "install.sh: git required." >&2
+    exit 1
+  fi
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
+  git clone --depth 1 -q "$REPO_URL" "$tmp/claude-skills"
+  exec bash "$tmp/claude-skills/install.sh" "$@"
+fi
+
+SCRIPT_DIR="$here"
 ACTION="install"
 PLUGIN=""
 

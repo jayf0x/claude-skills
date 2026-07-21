@@ -5,6 +5,8 @@
 #   /kronny 5            — same
 #   /kronny 15 "gh *"   — allow bash commands matching "gh *" for 15 minutes
 #   /kronny -1           — allow everything for 24 hours
+#   /kronny status       — show time left on the current window
+#   /kronny ttl          — alias for status
 
 description = "Set a time-limited auto-approve window so Claude can run tools without permission prompts. Pattern defaults to * (all tools). Pass a bash glob to restrict to matching commands."
 

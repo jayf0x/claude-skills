@@ -4,6 +4,16 @@ A repo for skills I test. Most-used skills get their own repo, like [kronny](htt
 
 ## Install
 
+One-liner (all plugins):
+```bash
+curl -fsSL https://raw.githubusercontent.com/jayf0x/claude-skills/main/install.sh | bash
+```
+
+One plugin:
+```bash
+curl -fsSL https://raw.githubusercontent.com/jayf0x/claude-skills/main/install.sh | bash -s -- kronny
+```
+
 <!-- INSTALL:START -->
 ```bash
 git clone https://github.com/jayf0x/claude-skills
