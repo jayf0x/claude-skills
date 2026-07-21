@@ -302,6 +302,13 @@ class TestCLI(unittest.TestCase):
         self.assertEqual(r.returncode, 0)
         self.assertFalse(os.path.exists(self.state_file))
 
+    def test_ttl_is_alias_for_status(self):
+        with open(self.state_file, "w") as f:
+            json.dump({"expires_at": int(time.time()) + 300, "pattern": "*", "notified": False}, f)
+        r = self._run_cli("ttl")
+        self.assertEqual(r.returncode, 0)
+        self.assertIn("left", r.stdout)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
