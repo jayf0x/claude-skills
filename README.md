@@ -48,78 +48,21 @@ Restart Claude Code after installing.
 
 ---
 
-## Skills
+## Plugins
 
-### 🏷 simple-name — auto-rename sessions
+Each plugin has its own README with install/uninstall details — linked below.
 
-Every new session is renamed to `{repo}: {MM/DD}-{hash}` at startup. No more "General Session" or 200 unnamed tabs.
-
-Example: `claude-skills: 06/30-mr0jd4j7`
-
-Implemented as a `SessionStart` hook — fires automatically, no commands needed.
-
----
-
-### 🦆 silicon-duck — always-on clarity rater
-
-Rates every conversation before Claude replies using a three-factor **CIP score** (Constraints / Intent / Provenance, 1–5). Catch underspecified prompts before they waste a whole run.
-
-```
-/duck disable   # silence it
-/duck enable    # bring it back
-```
-
----
-
-### ⏱ kronny — time-limited auto-approve windows
-
-Pre-authorize tool calls for a fixed window so Claude can work uninterrupted.
-
-```
-/kronny              # approve everything for 5 min
-/kronny 15           # 15-minute window
-/kronny 15 "gh *"    # only commands matching "gh *"
-/kronny -1           # 24-hour window
-```
-
-`PreToolUse` hook — zero restarts, zero config files.
-
----
-
-### 🛑 safe-pause — context-window guardian
-
-Warns at 80% context usage, blocks at 95%. Prevents Claude from dying mid-task on a long run.
-
-Requires the bundled Chrome extension + local bridge server.
-
----
-
-### 📋 plan-next — session continuity
-
-`/plan` picks up exactly where you left off. Reads your plan file and session history, auto-detects the next stage.
-
-```
-/plan            # resume next stage
-/plan 3          # jump to stage 3
-/plan deploy     # jump to a named stage
-```
-
----
-
-### 🐈 commit-mauw — commit as your co-pilot's persona
-
-Attributes git commits to a configurable non-human co-pilot (a cat, a dog, whatever) instead of
-you or Claude — in any repo, no per-repo setup. Fires automatically whenever Claude is about to
-commit, or explicitly via `/commit-mauw`.
-
-```
-/commit-mauw     # commit staged changes as the configured persona
-```
-
-All config lives in one file, `~/.claude/skills/commit-mauw/SKILL.md` — edit the identity block
-and the "Voice" section directly, no separate config file. A wrapper script
-(`scripts/commit.sh`) does the actual identity switch per-commit and always reverts afterward,
-even on failure, so reliability doesn't depend on Claude running commands in the right order.
+<!-- PLUGINS:START -->
+| Plugin | Description | Install | Uninstall |
+| --- | --- | --- | --- |
+| [commit-mauw](./plugins/commit-mauw/README.md) | Attributes git commits to a configurable non-human co-pilot persona (cat, dog, or your own), in its voice, in every repo. Edit the identity block in the installed SKILL.md directly to customize. | `./plugins/commit-mauw/install.sh` | `./plugins/commit-mauw/uninstall.sh` |
+| [kronny](./plugins/kronny/README.md) | Grants time-limited auto-approve windows via a PreToolUse hook. /kronny [minutes] ["pattern"] — no session restart required. | `./plugins/kronny/install.sh` | `./plugins/kronny/uninstall.sh` |
+| [local-commands](./plugins/local-commands/README.md) | Collect non-obvious shell commands from sessions (/cmds-collect) and compress them into a globally-active cheat-sheet skill (/cmds-compress). | `./plugins/local-commands/install.sh` | `./plugins/local-commands/uninstall.sh` |
+| [plan-next](./plugins/plan-next/README.md) | Smart session-continuation skill. Invoke /plan or /plan-next to auto-detect the next stage from your plan file and session history, and begin it immediately — no retyping required. Supports /plan <stage> to jump to a specific stage. | `./plugins/plan-next/install.sh` | `./plugins/plan-next/uninstall.sh` |
+| [safe-pause](./plugins/safe-pause/README.md) | Warns and blocks tool calls when Claude.ai subscription utilization (five_hour or seven_day) crosses configurable thresholds. Requires the bundled Chrome extension + local bridge server to read actual usage from the API. | `./plugins/safe-pause/install.sh` | `./plugins/safe-pause/uninstall.sh` |
+| [silicon-duck](./plugins/silicon-duck/README.md) | Always-on rubber duck that prepends a CIP clarity score (Constraints / Intent / Provenance, 1–5 each) before every reply so you can track how well-specified the conversation is. | `./plugins/silicon-duck/install.sh` | `./plugins/silicon-duck/uninstall.sh` |
+| [simple-name](./plugins/simple-name/README.md) | Auto-renames sessions to {repo}: {MM/DD}-{hash} on session start. | `./plugins/simple-name/install.sh` | `./plugins/simple-name/uninstall.sh` |
+<!-- PLUGINS:END -->
 
 ---
 

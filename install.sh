@@ -31,6 +31,10 @@ SCRIPT_DIR="$here"
 ACTION="install"
 PLUGIN=""
 
+if [[ -d "$SCRIPT_DIR/.git" ]] && [[ -d "$SCRIPT_DIR/.githooks" ]]; then
+  git -C "$SCRIPT_DIR" config core.hooksPath .githooks
+fi
+
 usage() {
   cat <<'EOF'
 Usage:

@@ -1,4 +1,5 @@
 .keep
 .DS_Store
+.claude
 node_modules
 __pycache__

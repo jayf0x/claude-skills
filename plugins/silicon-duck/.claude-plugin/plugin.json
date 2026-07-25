@@ -1,0 +1,10 @@
+{
+  "name": "silicon-duck",
+  "version": "1.0.0",
+  "description": "Always-on rubber duck that prepends a CIP clarity score (Constraints / Intent / Provenance, 1–5 each) before every reply so you can track how well-specified the conversation is.",
+  "author": {
+    "name": "Jay Fox",
+    "email": "jjay56883@gmail.com"
+  },
+  "keywords": ["clarity", "prompt-quality", "duck", "cip", "feedback"]
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readdirSync, existsSync } from 'node:fs';
+import { readdirSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { taglifyFile } from 'taglify';
 
@@ -18,6 +18,16 @@ for (const plugin of plugins) {
     process.exit(1);
   }
 }
+
+const manifests = plugins.map((plugin) => {
+  const manifestPath = join(PLUGINS_DIR, plugin, '.claude-plugin', 'plugin.json');
+  if (!existsSync(manifestPath)) {
+    console.error(`precommit: ${plugin} is missing .claude-plugin/plugin.json`);
+    process.exit(1);
+  }
+  const { name, description } = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  return { plugin, name, description };
+});
 
 const installLines = [
   '```bash',
@@ -38,9 +48,21 @@ const uninstallLines = [
   '```',
 ].join('\n');
 
+const escapeCell = (text) => text.replace(/\|/g, '\\|').replace(/\n/g, ' ');
+
+const pluginsTable = [
+  '| Plugin | Description | Install | Uninstall |',
+  '| --- | --- | --- | --- |',
+  ...manifests.map(
+    ({ plugin, name, description }) =>
+      `| [${name}](./plugins/${plugin}/README.md) | ${escapeCell(description)} | \`./plugins/${plugin}/install.sh\` | \`./plugins/${plugin}/uninstall.sh\` |`,
+  ),
+].join('\n');
+
 const changed = taglifyFile(README, {
   INSTALL: installLines,
   UNINSTALL: uninstallLines,
+  PLUGINS: pluginsTable,
 });
 
 if (changed) {
