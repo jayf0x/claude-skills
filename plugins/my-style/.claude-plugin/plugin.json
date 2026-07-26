@@ -1,0 +1,10 @@
+{
+  "name": "my-style",
+  "version": "1.0.0",
+  "description": "A growing React style skill. Ships a preset of style rules (memory.md) active in every session, plus /my-style add and /my-style merge to let the rule set evolve from real use cases instead of being fixed upfront.",
+  "author": {
+    "name": "Jay Fox",
+    "email": "jjay56883@gmail.com"
+  },
+  "keywords": ["react", "style", "code-quality", "growing", "preferences"]
+}
