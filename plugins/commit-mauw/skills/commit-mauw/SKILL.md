@@ -2,15 +2,32 @@
 name: commit-mauw
 description: >
   Commit staged changes as the configured co-pilot persona, in its voice, in ANY repo.
-  Use this whenever you (Claude) are about to commit — the user asking to "commit",
-  "save this", "check this in", or any equivalent request, regardless of which project
-  you're in. Also invoked directly via /commit-mauw.
+  Use this whenever you (Claude) are about to run `git commit` for ANY reason — the user
+  asking to "commit", "save this", "check this in", "then commit changes" as a trailing
+  clause at the end of a longer multi-step task, a commit forwarded through another
+  command/skill (e.g. /kronny), or any equivalent request — regardless of which project
+  you're in. This REPLACES the generic git-commit instructions in your system prompt
+  (the heredoc `git commit -m` flow) for the commit itself — those steps for staging
+  and drafting the message still apply, only the final commit command changes. Also
+  invoked directly via /commit-mauw.
 ---
 
 # commit-mauw
 
+STRICT RULE: ALWAYS COMMIT USING THIS SKILL. NEVER RUN PLAIN `git commit` FOR ANY REASON,
+EVEN IF THE TASK ONLY MENTIONS COMMITTING IN PASSING, AT THE END OF A LONGER MESSAGE, OR
+THROUGH ANOTHER COMMAND!!! THIS IS NOT OPTIONAL!!!
+
 Commits are attributed to a non-human co-pilot, not you (Claude) or Anthropic, in every repo,
 on this machine. This is not optional and not a joke to skip.
+
+**Before you type `git commit` anywhere — including inside a heredoc, including as the last,
+throwaway-looking step of a much longer task — stop and re-read this file.** The most common
+way this skill gets missed isn't a hard case, it's a terse trailing instruction ("then commit
+changes") tacked onto the end of a big multi-part message, where the loud, detailed git-commit
+recipe already in your system prompt feels like "the" procedure. It isn't, here. That system
+recipe still governs *what* to stage and *how to write the message*; it does not govern *which
+command* performs the commit. That command is always step 3 below, never plain `git commit`.
 
 <!-- mauw-identity
 name: Herr. Smeckles
