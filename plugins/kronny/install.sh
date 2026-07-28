@@ -15,6 +15,17 @@ SKILLS_DIR="$HOME/.claude/skills/kronny"
 
 echo "Installing kronny..."
 
+if grep -q '"kronny@[^"]*": *true' "$SETTINGS" 2>/dev/null; then
+  echo ""
+  echo "  WARNING: a marketplace-installed kronny plugin is also enabled in"
+  echo "  $SETTINGS (look for \"kronny@...\": true)."
+  echo "  Running both a local install and a marketplace plugin at once causes"
+  echo "  duplicate/conflicting commands, skills, and hooks. Disable one:"
+  echo "    - to keep this local install: set that entry to false"
+  echo "    - to keep the marketplace plugin: run ./uninstall.sh instead"
+  echo ""
+fi
+
 # ── 1. State dir + scripts ────────────────────────────────────────────────
 mkdir -p "$STATE_DIR"
 cp "$SCRIPT_DIR/hooks/kronny-hook.py" "$STATE_DIR/kronny-hook.py"
