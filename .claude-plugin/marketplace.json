@@ -44,9 +44,9 @@
       "description": "Growing personal React style skill: a preset memory.md active every session, plus /my-style add and /my-style merge to evolve the rules from real use cases."
     },
     {
-      "name": "commit-mauw",
-      "source": "./plugins/commit-mauw",
-      "description": "Attributes git commits to a configurable non-human co-pilot persona (cat, dog, or your own), in its voice, in every repo. Edit the identity block in the installed SKILL.md directly to customize."
+      "name": "git-meow",
+      "source": "./plugins/git-meow",
+      "description": "Attributes git commits to a configurable non-human co-pilot persona (cat, dog, or your own), in its voice, in every repo. Enforced by a git hook — plain `git commit` is rejected."
     }
   ]
 }

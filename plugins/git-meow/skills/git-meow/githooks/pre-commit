@@ -1,0 +1,12 @@
+#!/bin/sh
+# Global gate: rejects any commit that didn't go through git-meow's
+# scripts/commit.sh, which sets GIT_MEOW_ACTIVE=1 before invoking `git commit`.
+# Installed as `core.hooksPath` (global, or temporarily local — see commit.sh),
+# so this runs for every commit, in every repo, until uninstalled.
+if [ "${GIT_MEOW_ACTIVE:-}" != "1" ]; then
+    echo "git-meow: commit rejected — use scripts/commit.sh (skill: git-meow), not plain 'git commit'." >&2
+    echo "  ~/.claude/skills/git-meow/scripts/commit.sh -m \"<message>\"" >&2
+    exit 1
+fi
+
+exit 0

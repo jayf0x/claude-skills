@@ -4,8 +4,12 @@
 # block (one directory up from this script), then restoring whatever was
 # there before — regardless of outcome. Works in any repo, no per-repo setup.
 #
+# Also sets GIT_MEOW_ACTIVE=1, the sentinel the global pre-commit gate hook
+# (see githooks/pre-commit) requires — that hook rejects plain `git commit`
+# everywhere on this machine unless this wrapper set it.
+#
 # Usage: same arguments as `git commit`, e.g.:
-#   ~/.claude/skills/commit-mauw/scripts/commit.sh -m "did a thing"
+#   ~/.claude/skills/git-meow/scripts/commit.sh -m "did a thing"
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -19,7 +23,7 @@ repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || {
 
 extract_field() {
     awk -v f="$1" '
-        /<!-- mauw-identity/ { inblock=1; next }
+        /<!-- meow-identity/ { inblock=1; next }
         inblock && /-->/ { inblock=0 }
         inblock && $0 ~ "^"f":" {
             sub("^"f":[ \t]*", "");
@@ -87,6 +91,6 @@ else
     echo "commit.sh: no valid persona configured in $SKILL_MD, committing under your regular git identity" >&2
 fi
 
-git -C "$repo_root" commit "$@"
+GIT_MEOW_ACTIVE=1 git -C "$repo_root" commit "$@"
 exit_code=$?
 exit "$exit_code"

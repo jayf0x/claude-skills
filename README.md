@@ -25,7 +25,7 @@ cd claude-skills
 ./install.sh
 
 # or one at a time
-./plugins/commit-mauw/install.sh
+./plugins/git-meow/install.sh
 ./plugins/kronny/install.sh
 ./plugins/local-commands/install.sh
 ./plugins/my-style/install.sh
@@ -56,7 +56,7 @@ Each plugin has its own README with install/uninstall details — linked below.
 <!-- PLUGINS:START -->
 | Plugin | Description | Install | Uninstall |
 | --- | --- | --- | --- |
-| [commit-mauw](./plugins/commit-mauw/README.md) | Attributes git commits to a configurable non-human co-pilot persona (cat, dog, or your own), in its voice, in every repo. Edit the identity block in the installed SKILL.md directly to customize. | `./plugins/commit-mauw/install.sh` | `./plugins/commit-mauw/uninstall.sh` |
+| [git-meow](./plugins/git-meow/README.md) | Attributes git commits to a configurable non-human co-pilot persona (cat, dog, or your own), in its voice, in every repo. Enforced by a global git hook — plain `git commit` is rejected. | `./plugins/git-meow/install.sh` | `./plugins/git-meow/uninstall.sh` |
 | [kronny](./plugins/kronny/README.md) | Grants time-limited auto-approve windows via a PreToolUse hook. /kronny [minutes] ["pattern"] — no session restart required. | `./plugins/kronny/install.sh` | `./plugins/kronny/uninstall.sh` |
 | [local-commands](./plugins/local-commands/README.md) | Collect non-obvious shell commands from sessions (/cmds-collect) and compress them into a globally-active cheat-sheet skill (/cmds-compress). | `./plugins/local-commands/install.sh` | `./plugins/local-commands/uninstall.sh` |
 | [my-style](./plugins/my-style/README.md) | A growing React style skill. Ships a preset of style rules (memory.md) active in every session, plus /my-style add and /my-style merge to let the rule set evolve from real use cases instead of being fixed upfront. | `./plugins/my-style/install.sh` | `./plugins/my-style/uninstall.sh` |
@@ -72,7 +72,7 @@ Each plugin has its own README with install/uninstall details — linked below.
 
 <!-- UNINSTALL:START -->
 ```bash
-./plugins/commit-mauw/uninstall.sh
+./plugins/git-meow/uninstall.sh
 ./plugins/kronny/uninstall.sh
 ./plugins/local-commands/uninstall.sh
 ./plugins/my-style/uninstall.sh

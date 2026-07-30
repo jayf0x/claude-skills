@@ -15,7 +15,7 @@ command -v gh &>/dev/null || { echo "gh CLI not found — install it first: http
 
 extract_field() {
     awk -v f="$1" '
-        /<!-- mauw-identity/ { inblock=1; next }
+        /<!-- meow-identity/ { inblock=1; next }
         inblock && /-->/ { inblock=0 }
         inblock && $0 ~ "^"f":" {
             sub("^"f":[ \t]*", "");
