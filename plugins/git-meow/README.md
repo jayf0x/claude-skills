@@ -2,7 +2,7 @@
 
 Attributes git commits to a configurable non-human co-pilot (a cat, a dog, whatever persona you set) instead of you or Claude — in any repo, no per-repo setup. Fires automatically whenever Claude is about to commit, or explicitly via `/git-meow`.
 
-**Enforced, not just requested:** install sets a global git hook that rejects plain `git commit` everywhere on this machine — only `scripts/commit.sh` (which the skill/command run) can commit. This closes the gap where an LLM simply forgets to use the skill on a long task; the rejection comes from git itself.
+**Enforced, not just requested:** install sets a global git hook that rejects plain `git commit` run by an AI agent — only `scripts/commit.sh` (which the skill/command run) can commit. This closes the gap where an LLM simply forgets to use the skill on a long task; the rejection comes from git itself. The gate only fires when `CLAUDECODE=1` is set in the environment (true for every command Claude Code runs, absent for a human's own terminal or GUI commits), so it never blocks you — only the agent.
 
 ## Install
 
@@ -48,7 +48,7 @@ This requires the `gh` CLI and a second, already-authenticated `gh` account for 
 /git-meow     # commit staged changes as the configured persona
 ```
 
-Or just ask Claude to commit normally — it fires automatically. If something runs plain `git commit` anyway, git rejects it with a message pointing back to `commit.sh`.
+Or just ask Claude to commit normally — it fires automatically. If Claude runs plain `git commit` anyway, git rejects it with a message pointing back to `commit.sh`. Your own commits — terminal, GitHub Desktop, any other tool — are never affected.
 
 ## Uninstall
 

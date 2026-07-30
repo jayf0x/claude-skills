@@ -22,10 +22,12 @@ Commits are attributed to a non-human co-pilot, not you (Claude) or Anthropic, i
 on this machine. This is not optional and not a joke to skip.
 
 **This is enforced, not just requested.** A git hook installed globally (`core.hooksPath`,
-every repo, no per-repo setup) rejects plain `git commit` outright — it only succeeds when run
-through `scripts/commit.sh` below, which sets the sentinel the hook checks for. If you forget
-and run `git commit` directly, git itself will refuse it with an error pointing back here —
-that's expected, not a bug; rerun it through step 3 instead of working around the rejection.
+every repo, no per-repo setup) rejects plain `git commit` run by an AI agent — it only succeeds
+when run through `scripts/commit.sh` below, which sets the sentinel the hook checks for. It
+only gates commits made under `CLAUDECODE=1` (i.e. you), so it never blocks the human's own
+commits from a terminal or GUI tool. If you forget and run `git commit` directly, git itself
+will refuse it with an error pointing back here — that's expected, not a bug; rerun it through
+step 3 instead of working around the rejection.
 
 <!-- meow-identity
 name: Herr. Smeckles

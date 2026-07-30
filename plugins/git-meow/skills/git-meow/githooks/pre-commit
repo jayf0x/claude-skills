@@ -1,11 +1,20 @@
 #!/bin/sh
-# Global gate: rejects any commit that didn't go through git-meow's
-# scripts/commit.sh, which sets GIT_MEOW_ACTIVE=1 before invoking `git commit`.
-# Installed as `core.hooksPath` (global, or temporarily local — see commit.sh),
-# so this runs for every commit, in every repo, until uninstalled.
+# Global gate: rejects any commit made by an AI agent that didn't go through
+# git-meow's scripts/commit.sh, which sets GIT_MEOW_ACTIVE=1 before invoking
+# `git commit`. Installed as `core.hooksPath` (global, or temporarily local —
+# see commit.sh), so this runs for every commit, in every repo, until
+# uninstalled.
+#
+# CLAUDECODE=1 is set by the Claude Code harness for every command it runs
+# (Bash tool, subagents, etc.) and is absent for human commits — terminal,
+# GitHub Desktop, any other GUI. Only gate when it's present, so this never
+# gets in a human's way, only an agent's.
+if [ -z "${CLAUDECODE:-}" ]; then
+    exit 0
+fi
+
 if [ "${GIT_MEOW_ACTIVE:-}" != "1" ]; then
-    echo "git-meow: commit rejected — use scripts/commit.sh (skill: git-meow), not plain 'git commit'." >&2
-    echo "  ~/.claude/skills/git-meow/scripts/commit.sh -m \"<message>\"" >&2
+    echo "Rejected. Use skill 'git-meow' for commits: ${HOME}/.claude/skills/git-meow/scripts/commit.sh -m \"<message>\"" >&2
     exit 1
 fi
 
