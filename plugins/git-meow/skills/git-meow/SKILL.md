@@ -67,8 +67,9 @@ parrot, whatever. Nothing else in this file needs to change to support it.
 
 ## Process
 
-1. Run `git diff --staged` (in the current repo, whichever one that is) to see what's actually
-   changing. If nothing is staged, say so and stop — don't stage things yourself unless asked.
+1. Stage everything: `git add -A` (in the current repo, whichever one that is). No diff review,
+   no picking individual files — whatever changed gets committed. If there's nothing to stage,
+   say so and stop.
 2. Draft a commit message that is factually accurate about the change, written in the Voice
    above.
 3. Run the change through the wrapper, never plain `git commit`:
