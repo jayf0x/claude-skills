@@ -49,104 +49,71 @@ if ! is_placeholder "$cur_name" && ! is_placeholder "$cur_email"; then
     echo
 fi
 
-has_gh=0
-command -v gh &>/dev/null && has_gh=1
-
-use_gh="n"
-if [[ "$has_gh" == 1 ]]; then
-    read -rp "Persona has its own GitHub account for pushes/PRs too (no = commit credit only, you still push)? [y/N]: " use_gh
-else
-    echo "gh CLI not found (https://cli.github.com) — persona will be commit-author-only."
-fi
-
-name=""
-email=""
-gh_user=""
-
-if [[ "$use_gh" =~ ^[Yy] ]]; then
-    before="$(gh_accounts)"
-
-    echo "Sign in as the persona's own GitHub account (browser login)."
-    read -rp "Press enter to continue..." _
-    gh auth login --hostname github.com --git-protocol https --web \
-        --scopes "repo,gist,read:org,workflow,user"
-
-    after="$(gh_accounts)"
-    new_accounts="$(comm -13 <(sort <<<"$before") <(sort <<<"$after"))"
-    new_count="$(grep -c . <<<"$new_accounts" || true)"
-
-    if [[ "$new_count" -eq 1 ]]; then
-        gh_user="$new_accounts"
-    else
-        echo "Which account is the persona?"
-        mapfile -t all_accounts < <(gh_accounts)
-        select acct in "${all_accounts[@]}"; do
-            [[ -n "$acct" ]] && gh_user="$acct" && break
-        done
-    fi
-    echo "Persona's GitHub account: $gh_user"
-
-    persona_token="$(gh auth token --hostname github.com --user "$gh_user" 2>/dev/null || true)"
-    profile_name="$(GH_TOKEN="$persona_token" gh api user --jq '.name // .login')"
-
-    if ! email_list="$(GH_TOKEN="$persona_token" gh api user/emails --jq '.[] | select(.verified) | .email' 2>/dev/null)"; then
-        # likely missing the 'user' scope (older login) — ask for it once, then retry
-        gh auth refresh --hostname github.com --scopes "repo,gist,read:org,workflow,user" >/dev/null 2>&1 || true
-        persona_token="$(gh auth token --hostname github.com --user "$gh_user" 2>/dev/null || true)"
-        email_list="$(GH_TOKEN="$persona_token" gh api user/emails --jq '.[] | select(.verified) | .email' 2>/dev/null || true)"
-    fi
-    verified_emails=()
-    while IFS= read -r e; do [[ -n "$e" ]] && verified_emails+=("$e"); done <<<"$email_list"
-
-    if [[ "${#verified_emails[@]}" -eq 0 ]]; then
-        echo "Warning: no verified email visible for $gh_user (needs the 'user' gh scope, or the account has none verified)."
-        echo "A commit authored with an email that isn't verified on $gh_user won't count toward its"
-        echo "GitHub contribution graph, even if the account itself pushes it."
-        read -rp "Persona email: " email
-    elif [[ "${#verified_emails[@]}" -eq 1 ]]; then
-        email="${verified_emails[0]}"
-        echo "Using $gh_user's verified email: $email"
-    else
-        echo "$gh_user has multiple verified emails:"
-        for i in "${!verified_emails[@]}"; do
-            echo "  $((i + 1))) ${verified_emails[$i]}"
-        done
-        read -rp "Pick one [1]: " pick
-        pick="${pick:-1}"
-        email="${verified_emails[$((pick - 1))]:-${verified_emails[0]}}"
-    fi
-
-    read -rp "Persona name [${profile_name}]: " name
-    name="${name:-$profile_name}"
-else
-    echo
-    echo "No GitHub account for the persona — it'll get commit-author credit only (the name/email"
-    echo "on each commit); pushes and PRs stay under your own gh account."
-    read -rp "Persona name: " name
-    read -rp "Persona email: " email
-    read -rp "Persona GitHub username (optional, cosmetic without gh auth) [none]: " gh_user
-fi
+# Identity is the only required part: name/email is what shows up as the
+# commit author. Nothing here needs GitHub — pushes still go out under your
+# own gh account either way, this is just the name on the commit.
+read -rp "Persona name: " name
+read -rp "Persona email: " email
 
 [[ -n "$name" ]] || { echo "Name can't be empty — aborting." >&2; exit 1; }
 [[ "$email" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]] || { echo "'$email' doesn't look like a valid email — aborting." >&2; exit 1; }
 
-awk -v name="$name" -v email="$email" -v user="$gh_user" '
+awk -v name="$name" -v email="$email" '
   /<!-- meow-identity/ { inblock=1 }
   inblock && /^name:/ { print "name: " name; next }
   inblock && /^email:/ { print "email: " email; next }
+  inblock && /-->/ { inblock=0 }
+  { print }
+' "$SKILL_MD" > "${SKILL_MD}.tmp" && mv "${SKILL_MD}.tmp" "$SKILL_MD"
+
+echo "Identity set: $name <$email> — commits will be authored as this from now on."
+
+command -v gh &>/dev/null || exit 0
+
+# --- Optional: push/PR as the persona's own GitHub account -----------------
+# What this does and doesn't do:
+#   - The identity above is ALREADY enough to get commit-author credit — this
+#     step is unrelated to that, and skipping it changes nothing about it.
+#   - This is only about who *pushes* / *opens PRs*: by default that's still
+#     you (your own gh login), even though commits are authored as the
+#     persona. Say yes here only if you want the persona to have its own
+#     real GitHub account doing the pushing/PR-opening too.
+#   - Saying yes logs into gh CLI as a second account and can switch gh's
+#     *active* account globally (every repo on this machine, until you
+#     revert it) — that's a bigger footprint than just the commit identity.
+echo
+read -rp "Also give '$name' its own GitHub account for pushes/PRs (optional, separate from the above)? [y/N]: " use_gh
+[[ "$use_gh" =~ ^[Yy] ]] || exit 0
+
+before="$(gh_accounts)"
+echo "Sign in as that account (browser login)."
+read -rp "Press enter to continue..." _
+gh auth login --hostname github.com --git-protocol https --web
+
+after="$(gh_accounts)"
+new_accounts="$(comm -13 <(sort <<<"$before") <(sort <<<"$after"))"
+new_count="$(grep -c . <<<"$new_accounts" || true)"
+
+if [[ "$new_count" -eq 1 ]]; then
+    gh_user="$new_accounts"
+else
+    echo "Which account is the persona?"
+    mapfile -t all_accounts < <(gh_accounts)
+    select acct in "${all_accounts[@]}"; do
+        [[ -n "$acct" ]] && gh_user="$acct" && break
+    done
+fi
+
+awk -v user="$gh_user" '
+  /<!-- meow-identity/ { inblock=1 }
   inblock && /^github_username:/ { print "github_username: " user; next }
   inblock && /-->/ { inblock=0 }
   { print }
 ' "$SKILL_MD" > "${SKILL_MD}.tmp" && mv "${SKILL_MD}.tmp" "$SKILL_MD"
 
-echo "Identity set: $(extract_field name) <$(extract_field email)>${gh_user:+ (github: $gh_user)}"
-
-if [[ ! "$use_gh" =~ ^[Yy] ]]; then
-    exit 0
-fi
-
+echo "Persona's GitHub account: $gh_user"
 echo
-read -rp "Also switch gh's active account to $gh_user (global, affects every repo) now? [y/N]: " do_switch
+read -rp "Switch gh's active account to $gh_user now (global, affects every repo on this machine)? [y/N]: " do_switch
 if [[ ! "$do_switch" =~ ^[Yy] ]]; then
     echo "Skipped. Run ${SCRIPT_DIR}/push-account-install.sh later if you change your mind."
     exit 0
