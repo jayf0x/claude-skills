@@ -64,6 +64,50 @@ echo "           framework, lefthook, ...) machine-wide while installed — see 
 echo ""
 echo "Done. Works in any repo — no per-repo setup needed."
 echo "Restart Claude Code if it was already running."
-echo ""
-echo "Next: run ${SKILLS_DIR}/scripts/setup-persona.sh to set the persona's identity"
-echo "(and, optionally, make it push/PR under its own GitHub account)."
+
+# --- Persona configured check ---
+# commit.sh silently falls back to your real git identity if the identity
+# block still has placeholder values — so without this, install finishing
+# cleanly reads as "it's ready," when git-meow actually wouldn't attribute
+# anything to a persona yet.
+extract_field() {
+  awk -v f="$1" '
+      /<!-- meow-identity/ { inblock=1; next }
+      inblock && /-->/ { inblock=0 }
+      inblock && $0 ~ "^"f":" {
+          sub("^"f":[ \t]*", "");
+          print;
+          exit
+      }
+  ' "${SKILLS_DIR}/SKILL.md" 2>/dev/null
+}
+cur_name="$(extract_field name)"
+cur_email="$(extract_field email)"
+
+case "${cur_name}${cur_email}" in
+  *REPLACE_ME*|"")
+    echo ""
+    echo "=========================================================================="
+    echo " NOT READY YET: no persona identity is configured."
+    echo " Until you run setup-persona.sh, commits fall back SILENTLY to your own"
+    echo " git identity — git-meow won't error, it just won't do anything."
+    echo "=========================================================================="
+    if [[ -t 0 ]]; then
+      echo ""
+      read -rp "Run setup-persona.sh now? [Y/n]: " run_now
+      if [[ ! "$run_now" =~ ^[Nn] ]]; then
+        exec "${SKILLS_DIR}/scripts/setup-persona.sh"
+      fi
+      echo "Skipped — run it yourself when ready:"
+    else
+      echo " (not running it now — this shell has no interactive input, e.g. it was"
+      echo " run by an agent rather than typed by you. Run it yourself when ready:)"
+    fi
+    echo "  ${SKILLS_DIR}/scripts/setup-persona.sh"
+    ;;
+  *)
+    echo ""
+    echo "Persona already configured: ${cur_name} <${cur_email}>"
+    echo "Re-run ${SKILLS_DIR}/scripts/setup-persona.sh any time to change it."
+    ;;
+esac

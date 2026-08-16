@@ -12,13 +12,19 @@ Attributes git commits to a configurable non-human co-pilot (a cat, a dog, whate
 
 This installs the skill, wrapper scripts, a `commit-msg` + `pre-commit` git hook pair, the `/git-meow` command, and sets `git config --global core.hooksPath` to point at those hooks — globally, in every repo. Restart Claude Code if it was already running.
 
-**Then set the persona** (required before first use):
+**Then set the persona** (required before first use) — if you ran `install.sh` yourself in a terminal, it notices no persona is configured yet and offers to launch this for you immediately; otherwise (or to redo it later) run it directly:
 
 ```bash
 ~/.claude/skills/git-meow/scripts/setup-persona.sh
 ```
 
-Prompts for the persona's name/email/GitHub username and writes them into the identity block near the top of `~/.claude/skills/git-meow/SKILL.md` (that file is still the only place identity lives — edit it directly any time instead, if you prefer). It then optionally walks you through logging the persona into `gh` and switching pushes/PRs to authenticate as it (see below). Re-running it is how you set this up on a new machine, or swap in a different persona account.
+It's interactive and checks its own work as it goes:
+- Asks if the persona has its own GitHub account. If so, it logs it into `gh` (a normal browser device-code flow), *verifies* the login actually matches the username you gave (catches typos / wrong account), then suggests a name and a **verified** email pulled from that account's own GitHub profile — you approve or edit, rather than typing an email that might not even be verified (an unverified email silently never shows up on the persona's contribution graph, so this is the check that actually matters).
+- If it has no GitHub account, falls back to typing name/email by hand — commits still get attributed, just no push/PR identity.
+- Writes the result into the identity block near the top of `~/.claude/skills/git-meow/SKILL.md` (still the only place identity lives — edit it directly any time instead, if you prefer) and reads it back to confirm what was actually saved.
+- If you opted into a GitHub account, offers to also switch `gh`'s active account to it (see below), explaining upfront that this is global before doing it.
+
+If `install.sh` runs unattended (e.g. Claude itself ran it, not you at a terminal) it skips auto-launching this — an interactive `gh auth login` prompt would just hang with no one to answer it — and prints a loud warning instead, since `commit.sh` otherwise fails *silently*: with no persona configured it just falls back to committing as you, no error. Claude is instructed to notice that and offer to run `setup-persona.sh` itself rather than leaving you to find this file.
 
 Voice, personality, and examples also live in `SKILL.md`; edit directly, no separate config.
 

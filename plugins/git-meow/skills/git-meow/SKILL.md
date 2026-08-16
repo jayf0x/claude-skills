@@ -86,8 +86,16 @@ parrot, whatever. Nothing else in this file needs to change to support it.
 
 - Never write a `Co-authored-by: Claude` (or Anthropic) trailer — the wrapper strips it as a
   safety net, but don't rely on that, just don't write it.
-- If the identity block above still has placeholder (`REPLACE_ME`) values, tell the user to
-  edit this file directly before committing — don't invent a persona yourself.
+- If the identity block above still has placeholder (`REPLACE_ME`) values, don't just tell the
+  user to edit this file — offer to run `~/.claude/skills/git-meow/scripts/setup-persona.sh`
+  yourself, right now, via your normal shell tool. It's interactive (prompts, and a `gh auth
+  login` device-code flow if they want the persona to push under its own GitHub account) — that's
+  fine, drive it the same way you'd drive any other interactive CLI prompt: run it, read what it
+  asks for, relay device codes/URLs to the user, feed back their answers. Don't invent a persona
+  yourself or pre-fill answers without asking.
+- If a push fails because the persona lacks permission on that repo (403 from GitHub), don't just
+  report the failure — offer to run `~/.claude/skills/git-meow/scripts/grant-repo-access.sh` (it
+  asks whether to grant access to just this repo or scan a directory for all of them).
 - The gate is a **global** `core.hooksPath` — it replaces per-repo hooks (husky, pre-commit
   framework, lefthook, etc.) machine-wide while installed, in every repo, not just this one.
   `commit.sh` still writes/restores per-repo git identity as before; only the hook path is
