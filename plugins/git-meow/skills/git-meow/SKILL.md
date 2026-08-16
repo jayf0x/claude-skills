@@ -30,16 +30,16 @@ will refuse it with an error pointing back here — that's expected, not a bug; 
 step 3 instead of working around the rejection.
 
 <!-- meow-identity
-name: REPLACE_ME
-email: REPLACE_ME
-github_username: REPLACE_ME
+name: Herr. Smeckles
+email: 305811250+Herr-Smeckles@users.noreply.github.com
+github_username: Herr-Smeckles
 -->
 
 Edit the block above **directly, in this installed file**
 (`~/.claude/skills/git-meow/SKILL.md`) to change who gets credit — it's the only place
 identity lives, there's no separate config file. `name`/`email` become the git commit author;
-`github_username` is used by `scripts/push-account-install.sh` if you also want pushes/PRs to
-authenticate as this account.
+if `github_username` is set (and that account is logged into `gh`), `scripts/push.sh` pushes as
+it automatically — no separate switch, nothing global to revert.
 
 ## Voice
 
@@ -80,7 +80,15 @@ parrot, whatever. Nothing else in this file needs to change to support it.
    commit only, then reverts it afterward — regardless of outcome, so there's no cleanup step
    to remember, and it works in any repo with no per-repo setup. It also sets the sentinel the
    global pre-commit hook requires — plain `git commit` fails without it (see above).
-4. Report the result (commit hash/summary) back to the user.
+4. If asked to push (or the task calls for it), push through the wrapper too, never plain
+   `git push`:
+   ```
+   ~/.claude/skills/git-meow/scripts/push.sh
+   ```
+   If `github_username` is set in the identity block above and that account is logged into
+   `gh`, this authenticates the push as the persona automatically — same one-shot pattern as
+   `commit.sh`, nothing global changes. Otherwise it's a plain `git push` under your own account.
+5. Report the result (commit hash/summary) back to the user.
 
 ## Notes
 
@@ -89,10 +97,10 @@ parrot, whatever. Nothing else in this file needs to change to support it.
 - If the identity block above still has placeholder (`REPLACE_ME`) values, don't just tell the
   user to edit this file — offer to run `~/.claude/skills/git-meow/scripts/setup-persona.sh`
   yourself, right now, via your normal shell tool. It's interactive (prompts, and a `gh auth
-  login` device-code flow if they want the persona to push under its own GitHub account) — that's
-  fine, drive it the same way you'd drive any other interactive CLI prompt: run it, read what it
-  asks for, relay device codes/URLs to the user, feed back their answers. Don't invent a persona
-  yourself or pre-fill answers without asking.
+  login` device-code flow if the persona has its own GitHub account) — that's fine, drive it the
+  same way you'd drive any other interactive CLI prompt: run it, read what it asks for, relay
+  device codes/URLs to the user, feed back their answers. Don't invent a persona yourself or
+  pre-fill answers without asking.
 - If a push fails because the persona lacks permission on that repo (403 from GitHub), don't just
   report the failure — offer to run `~/.claude/skills/git-meow/scripts/grant-repo-access.sh` (it
   asks whether to grant access to just this repo or scan a directory for all of them).

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Invites the configured persona as a push collaborator on your repo(s), then
 # accepts the invite(s) as the persona — needed before it can actually push
-# anywhere, even after push-account-install.sh made it the active gh account.
+# anywhere, even once push.sh is authenticating as it.
 # Run standalone, whenever you hit a repo the persona can't push to yet.
 set -euo pipefail
 

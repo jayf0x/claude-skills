@@ -111,21 +111,7 @@ awk -v name="$name" -v email="$email" -v user="$gh_user" '
 
 echo "Identity set: $name <$email>${gh_user:+ (github: $gh_user)}"
 
-[[ -n "$gh_user" ]] || exit 0
-
-# Being logged in as the persona above is NOT the same as pushing as it —
-# `git push` / `gh pr create` still authenticate as YOUR active gh account
-# until you explicitly flip it here. This is global (every repo on this
-# machine) until push-account-uninstall.sh reverts it, so it's a separate,
-# deliberate step rather than bundled into login.
-echo
-read -rp "Also switch gh's active account to $gh_user, so pushes/PRs authenticate as it too (global)? [y/N]: " do_switch
-if [[ ! "$do_switch" =~ ^[Yy] ]]; then
-    echo "Skipped. Pushes/PRs still go out as you. Run ${SCRIPT_DIR}/push-account-install.sh later if you change your mind."
-    exit 0
+if [[ -n "$gh_user" ]]; then
+    echo "Pushes now go out as $gh_user automatically (scripts/push.sh) — no separate step, nothing global to flip."
+    echo "Note: $gh_user also needs push access on each repo — run ${SCRIPT_DIR}/grant-repo-access.sh when it can't push."
 fi
-
-rm -f "${SCRIPT_DIR}/../.push-account-state.json"  # allow re-running this setup
-"${SCRIPT_DIR}/push-account-install.sh"
-
-echo "Note: $gh_user also needs push access on each repo — run ${SCRIPT_DIR}/grant-repo-access.sh when it can't push."

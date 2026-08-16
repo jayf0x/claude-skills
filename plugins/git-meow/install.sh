@@ -6,48 +6,51 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_DIR="${HOME}/.claude/skills/git-meow"
 COMMANDS_DIR="${HOME}/.claude/commands"
 
-if [[ -f "${SKILLS_DIR}/SKILL.md" ]]; then
-  if [[ -t 0 ]]; then
-    read -rp "git-meow already installed. Reinstall (scripts/hooks refreshed, persona kept)? [y/N]: " reinstall
-    [[ "$reinstall" =~ ^[Yy] ]] || { echo "Left as is."; exit 0; }
+do_files=1
+if [[ -f "${SKILLS_DIR}/SKILL.md" && -t 0 ]]; then
+  read -rp "git-meow already installed. Reinstall (scripts/hooks refreshed, persona kept)? [y/N]: " reinstall
+  if [[ ! "$reinstall" =~ ^[Yy] ]]; then
+    echo "Left as is."
+    do_files=0
   fi
 fi
 
-mkdir -p "${SKILLS_DIR}/scripts" "${SKILLS_DIR}/githooks" "${COMMANDS_DIR}"
+if [[ "$do_files" == 1 ]]; then
+  mkdir -p "${SKILLS_DIR}/scripts" "${SKILLS_DIR}/githooks" "${COMMANDS_DIR}"
 
-[[ -f "${SKILLS_DIR}/SKILL.md" ]] || cp "${SCRIPT_DIR}/skills/git-meow/SKILL.md" "${SKILLS_DIR}/SKILL.md"
+  [[ -f "${SKILLS_DIR}/SKILL.md" ]] || cp "${SCRIPT_DIR}/skills/git-meow/SKILL.md" "${SKILLS_DIR}/SKILL.md"
 
-cp "${SCRIPT_DIR}/skills/git-meow/scripts/commit.sh" "${SKILLS_DIR}/scripts/commit.sh"
-cp "${SCRIPT_DIR}/skills/git-meow/scripts/push-account-install.sh" "${SKILLS_DIR}/scripts/push-account-install.sh"
-cp "${SCRIPT_DIR}/skills/git-meow/scripts/push-account-uninstall.sh" "${SKILLS_DIR}/scripts/push-account-uninstall.sh"
-cp "${SCRIPT_DIR}/skills/git-meow/scripts/setup-persona.sh" "${SKILLS_DIR}/scripts/setup-persona.sh"
-cp "${SCRIPT_DIR}/skills/git-meow/scripts/grant-repo-access.sh" "${SKILLS_DIR}/scripts/grant-repo-access.sh"
-chmod +x "${SKILLS_DIR}/scripts/"*.sh
+  cp "${SCRIPT_DIR}/skills/git-meow/scripts/commit.sh" "${SKILLS_DIR}/scripts/commit.sh"
+  cp "${SCRIPT_DIR}/skills/git-meow/scripts/push.sh" "${SKILLS_DIR}/scripts/push.sh"
+  cp "${SCRIPT_DIR}/skills/git-meow/scripts/setup-persona.sh" "${SKILLS_DIR}/scripts/setup-persona.sh"
+  cp "${SCRIPT_DIR}/skills/git-meow/scripts/grant-repo-access.sh" "${SKILLS_DIR}/scripts/grant-repo-access.sh"
+  chmod +x "${SKILLS_DIR}/scripts/"*.sh
 
-cp "${SCRIPT_DIR}/skills/git-meow/githooks/commit-msg" "${SKILLS_DIR}/githooks/commit-msg"
-cp "${SCRIPT_DIR}/skills/git-meow/githooks/pre-commit" "${SKILLS_DIR}/githooks/pre-commit"
-chmod +x "${SKILLS_DIR}/githooks/commit-msg" "${SKILLS_DIR}/githooks/pre-commit"
+  cp "${SCRIPT_DIR}/skills/git-meow/githooks/commit-msg" "${SKILLS_DIR}/githooks/commit-msg"
+  cp "${SCRIPT_DIR}/skills/git-meow/githooks/pre-commit" "${SKILLS_DIR}/githooks/pre-commit"
+  chmod +x "${SKILLS_DIR}/githooks/commit-msg" "${SKILLS_DIR}/githooks/pre-commit"
 
-cp "${SCRIPT_DIR}/commands/git-meow.md" "${COMMANDS_DIR}/git-meow.md"
+  cp "${SCRIPT_DIR}/commands/git-meow.md" "${COMMANDS_DIR}/git-meow.md"
 
-# core.hooksPath set globally so plain `git commit` (by an AI agent) is
-# rejected everywhere until routed through commit.sh. Also disables any
-# repo-local hooks (husky, pre-commit, lefthook) while installed — see README.
-STATE_FILE="${SKILLS_DIR}/.prev-global-hookspath"
-prev_hooks_path="$(git config --global core.hooksPath 2>/dev/null || true)"
+  # core.hooksPath set globally so plain `git commit` (by an AI agent) is
+  # rejected everywhere until routed through commit.sh. Also disables any
+  # repo-local hooks (husky, pre-commit, lefthook) while installed — see README.
+  STATE_FILE="${SKILLS_DIR}/.prev-global-hookspath"
+  prev_hooks_path="$(git config --global core.hooksPath 2>/dev/null || true)"
 
-if [[ "$prev_hooks_path" == "$SKILLS_DIR/githooks" ]]; then
-  : # already installed, nothing to save
-elif [[ -n "$prev_hooks_path" ]]; then
-  echo "$prev_hooks_path" > "$STATE_FILE"
-  echo "Note: overrode your existing global core.hooksPath ($prev_hooks_path) — uninstall.sh restores it."
-else
-  rm -f "$STATE_FILE"
+  if [[ "$prev_hooks_path" == "$SKILLS_DIR/githooks" ]]; then
+    : # already installed, nothing to save
+  elif [[ -n "$prev_hooks_path" ]]; then
+    echo "$prev_hooks_path" > "$STATE_FILE"
+    echo "Note: overrode your existing global core.hooksPath ($prev_hooks_path) — uninstall.sh restores it."
+  else
+    rm -f "$STATE_FILE"
+  fi
+
+  git config --global core.hooksPath "${SKILLS_DIR}/githooks"
+
+  echo "Installed: ${SKILLS_DIR}"
 fi
-
-git config --global core.hooksPath "${SKILLS_DIR}/githooks"
-
-echo "Installed: ${SKILLS_DIR}"
 
 # --- Persona configured check ---
 # commit.sh silently falls back to your real git identity if the identity

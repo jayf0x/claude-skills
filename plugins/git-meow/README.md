@@ -19,10 +19,10 @@ This installs the skill, wrapper scripts, a `commit-msg` + `pre-commit` git hook
 ```
 
 It's interactive and checks its own work as it goes:
-- Asks if the persona has its own GitHub account. If so, it logs it into `gh` (a normal browser device-code flow), *verifies* the login actually matches the username you gave (catches typos / wrong account), then suggests a name and a **verified** email pulled from that account's own GitHub profile — you approve or edit, rather than typing an email that might not even be verified (an unverified email silently never shows up on the persona's contribution graph, so this is the check that actually matters).
-- If it has no GitHub account, falls back to typing name/email by hand — commits still get attributed, just no push/PR identity.
+- If any `gh` accounts are already logged in, offers to pick the persona from that list; otherwise (or if you pick "log in as a different account") walks through a normal browser device-code login.
+- Suggests a name pulled from that account's GitHub profile and a GitHub **noreply** email built from its account id — both public fields, no extra scope needed — you approve or edit either.
+- If no `gh` CLI at all, falls back to typing name/email by hand — commits still get attributed, just no push/PR identity.
 - Writes the result into the identity block near the top of `~/.claude/skills/git-meow/SKILL.md` (still the only place identity lives — edit it directly any time instead, if you prefer) and reads it back to confirm what was actually saved.
-- If you opted into a GitHub account, offers to also switch `gh`'s active account to it (see below), explaining upfront that this is global before doing it.
 
 If `install.sh` runs unattended (e.g. Claude itself ran it, not you at a terminal) it skips auto-launching this — an interactive `gh auth login` prompt would just hang with no one to answer it — and prints a loud warning instead, since `commit.sh` otherwise fails *silently*: with no persona configured it just falls back to committing as you, no error. Claude is instructed to notice that and offer to run `setup-persona.sh` itself rather than leaving you to find this file.
 
@@ -34,21 +34,15 @@ Voice, personality, and examples also live in `SKILL.md`; edit directly, no sepa
 
 `scripts/commit.sh` also still swaps in the persona's git identity, and this same hooks dir, for the *current* repo for the duration of each wrapped commit — that's unchanged, and covers the repo-local-override case for legitimate git-meow commits.
 
-## Optional: also push/PR as the persona
+## Pushing as the persona
 
-By default only the commit *author* changes — pushes and `gh pr create` still authenticate as you. `setup-persona.sh` offers to set this up (logging the persona into `gh`, then running the script below); to redo it standalone:
-
-```bash
-~/.claude/skills/git-meow/scripts/push-account-install.sh
-```
-
-Requires the `gh` CLI and a second, already-authenticated `gh` account for the persona. It's global to the `gh` CLI — affects pushes from every repo, not just this one — until reverted:
+If `github_username` is set in the identity block (i.e. you gave the persona its own GitHub account during setup), `scripts/push.sh` authenticates each push as that account automatically — no separate install step, no global `gh` account switch, nothing to revert. If it isn't set, `push.sh` is just a plain `git push` under your own account.
 
 ```bash
-~/.claude/skills/git-meow/scripts/push-account-uninstall.sh
+~/.claude/skills/git-meow/scripts/push.sh
 ```
 
-**The persona also needs push access on the actual repo(s)** before this does anything useful — being the active `gh` account doesn't grant permissions. Being the commit *author* never required this (that's just text in a commit), but pushing does:
+**The persona also needs push access on the actual repo(s)** before this does anything useful — being logged into `gh` doesn't grant permissions on its own. Being the commit *author* never required this (that's just text in a commit), but pushing does:
 
 ```bash
 ~/.claude/skills/git-meow/scripts/grant-repo-access.sh
@@ -71,5 +65,3 @@ Or just ask Claude to commit normally — it fires automatically. If Claude runs
 ```
 
 Restores your previous global `core.hooksPath` (or unsets it if none existed) before removing the skill files.
-
-(Run `push-account-uninstall.sh` first if you installed the optional push-account step.)
