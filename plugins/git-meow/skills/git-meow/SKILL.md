@@ -30,9 +30,9 @@ will refuse it with an error pointing back here — that's expected, not a bug; 
 step 3 instead of working around the rejection.
 
 <!-- meow-identity
-name: Herr. Smeckles
-email: misamisa334@proton.me
-github_username: Herr-Smeckles
+name: REPLACE_ME
+email: REPLACE_ME
+github_username: REPLACE_ME
 -->
 
 Edit the block above **directly, in this installed file**

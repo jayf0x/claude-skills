@@ -24,6 +24,12 @@ if [[ -z "$here" || ! -d "$here/plugins" ]]; then
   tmp="$(mktemp -d)"
   trap 'rm -rf "$tmp"' EXIT
   git clone --depth 1 -q "$REPO_URL" "$tmp/claude-skills"
+  # stdin was just the piped script (curl | bash) — reopen from the real
+  # terminal so downstream `read` prompts (persona setup, y/N confirms) get
+  # actual keystrokes instead of immediate EOF.
+  if [[ ! -t 0 && -e /dev/tty ]]; then
+    exec bash "$tmp/claude-skills/install.sh" "$@" < /dev/tty
+  fi
   exec bash "$tmp/claude-skills/install.sh" "$@"
 fi
 

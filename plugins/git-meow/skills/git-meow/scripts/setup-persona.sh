@@ -24,9 +24,16 @@ extract_field() {
 
 is_placeholder() { case "$1" in *REPLACE_ME*|"") return 0 ;; *) return 1 ;; esac }
 
+gh_accounts() {
+    gh auth status --hostname github.com 2>&1 | awk '
+        /Logged in to github.com account/ {
+            for (i=1;i<=NF;i++) if ($i=="account") print $(i+1)
+        }
+    '
+}
+
 echo "== git-meow persona setup =="
-echo "This decides who gets credit for commits Claude makes on your behalf (and, optionally,"
-echo "who pushes/opens PRs) — everywhere on this machine, no per-repo setup."
+echo "Who gets credit for commits (and optionally pushes/PRs) as this persona."
 echo
 
 cur_name="$(extract_field name)"
@@ -37,7 +44,7 @@ if ! is_placeholder "$cur_name" && ! is_placeholder "$cur_email"; then
     echo "Currently configured: $cur_name <$cur_email>${cur_user:+ (github: $cur_user)}"
     read -rp "Reconfigure it? [y/N]: " reconfig
     if [[ ! "$reconfig" =~ ^[Yy] ]]; then
-        echo "Keeping existing persona. Nothing changed."
+        echo "Nothing changed."
         exit 0
     fi
     echo
@@ -48,9 +55,9 @@ command -v gh &>/dev/null && has_gh=1
 
 use_gh="n"
 if [[ "$has_gh" == 1 ]]; then
-    read -rp "Does this persona have its own GitHub account you want it to push/open PRs as? [y/N]: " use_gh
+    read -rp "Give this persona its own GitHub account to push/open PRs as? [y/N]: " use_gh
 else
-    echo "gh CLI not found (https://cli.github.com) — persona will be commit-author-only, no GitHub account path."
+    echo "gh CLI not found (https://cli.github.com) — persona will be commit-author-only."
 fi
 
 name=""
@@ -58,31 +65,28 @@ email=""
 gh_user=""
 
 if [[ "$use_gh" =~ ^[Yy] ]]; then
-    read -rp "Persona's GitHub username: " gh_user
-    [[ -n "$gh_user" ]] || { echo "No username given — aborting." >&2; exit 1; }
+    before="$(gh_accounts)"
 
-    auth_status="$(gh auth status --hostname github.com 2>&1)"
-    if grep -qi "account $gh_user" <<<"$auth_status"; then
-        echo "Already logged into gh as $gh_user — skipping login."
+    echo "Sign in as the persona's own GitHub account (browser login)."
+    read -rp "Press enter to continue..." _
+    gh auth login --hostname github.com --git-protocol https --web
+
+    after="$(gh_accounts)"
+    new_accounts="$(comm -13 <(sort <<<"$before") <(sort <<<"$after"))"
+    new_count="$(grep -c . <<<"$new_accounts" || true)"
+
+    if [[ "$new_count" -eq 1 ]]; then
+        gh_user="$new_accounts"
     else
-        echo
-        echo "Not logged into gh as $gh_user yet. About to start a browser login —"
-        echo "sign in using ${gh_user}'s OWN GitHub credentials, not yours."
-        read -rp "Press enter to continue..." _
-        gh auth login --hostname github.com --git-protocol https --web
+        echo "Which account is the persona?"
+        mapfile -t all_accounts < <(gh_accounts)
+        select acct in "${all_accounts[@]}"; do
+            [[ -n "$acct" ]] && gh_user="$acct" && break
+        done
     fi
+    echo "Persona's GitHub account: $gh_user"
 
-    echo "Verifying the login is actually $gh_user (not a typo or the wrong account)..."
     persona_token="$(gh auth token --hostname github.com --user "$gh_user" 2>/dev/null || true)"
-    actual_login="$(GH_TOKEN="$persona_token" gh api user --jq .login 2>/dev/null || true)"
-    if [[ -z "$persona_token" || "$actual_login" != "$gh_user" ]]; then
-        echo "Error: gh has no account logged in matching '$gh_user' (found: '${actual_login:-none}')." >&2
-        echo "Check the username and re-run this script." >&2
-        exit 1
-    fi
-    echo "Confirmed: logged in as $gh_user."
-
-    echo "Fetching $gh_user's profile to suggest a name and email..."
     profile_name="$(GH_TOKEN="$persona_token" gh api user --jq '.name // .login')"
 
     email_list="$(GH_TOKEN="$persona_token" gh api user/emails --jq '.[] | select(.verified) | .email' 2>/dev/null || true)"
@@ -130,40 +134,20 @@ awk -v name="$name" -v email="$email" -v user="$gh_user" '
   { print }
 ' "$SKILL_MD" > "${SKILL_MD}.tmp" && mv "${SKILL_MD}.tmp" "$SKILL_MD"
 
-echo
-echo "Identity written to $SKILL_MD:"
-echo "  name:            $(extract_field name)"
-echo "  email:           $(extract_field email)"
-echo "  github_username: $(extract_field github_username)"
-echo "(Commits are already attributed to this identity from here on — nothing more needed for that part.)"
+echo "Identity set: $(extract_field name) <$(extract_field email)>${gh_user:+ (github: $gh_user)}"
 
 if [[ ! "$use_gh" =~ ^[Yy] ]]; then
-    echo
-    echo "Done. Pushes/PRs stay under your own gh account; only commit authorship uses $name."
     exit 0
 fi
 
 echo
-echo "Now switching gh's active account to $gh_user so pushes/PRs authenticate as it."
-echo "This is GLOBAL to the gh CLI — it affects pushes from EVERY repo on this machine,"
-echo "including your own manual git/gh commands, until you run push-account-uninstall.sh."
-read -rp "Continue? [y/N]: " do_switch
+read -rp "Also switch gh's active account to $gh_user (global, affects every repo) now? [y/N]: " do_switch
 if [[ ! "$do_switch" =~ ^[Yy] ]]; then
-    echo "Skipped. Identity is set, but pushes/PRs still authenticate as you."
-    echo "Run ${SCRIPT_DIR}/push-account-install.sh later if you change your mind."
+    echo "Skipped. Run ${SCRIPT_DIR}/push-account-install.sh later if you change your mind."
     exit 0
 fi
-
-prev_active="$(awk '{for(i=1;i<=NF;i++) if($i=="account") cur=$(i+1)} /Active account: true/ {print cur; exit}' <<<"$auth_status")"
-echo "(Your own gh account, $prev_active, is saved — push-account-uninstall.sh restores it.)"
 
 rm -f "${SCRIPT_DIR}/../.push-account-state.json"  # allow re-running this setup
 "${SCRIPT_DIR}/push-account-install.sh"
 
-echo
-echo "gh's active account is now $gh_user."
-echo
-echo "One more thing: $gh_user still needs actual PUSH ACCESS on each repo before it can push —"
-echo "being the active gh account doesn't grant permissions by itself. Run this whenever you hit"
-echo "a repo it can't push to (one repo, or scan a directory for all of them):"
-echo "  ${SCRIPT_DIR}/grant-repo-access.sh"
+echo "Note: $gh_user also needs push access on each repo — run ${SCRIPT_DIR}/grant-repo-access.sh when it can't push."

@@ -6,16 +6,19 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_DIR="${HOME}/.claude/skills/git-meow"
 COMMANDS_DIR="${HOME}/.claude/commands"
 
-echo "Installing git-meow..."
+if [[ -f "${SKILLS_DIR}/SKILL.md" ]]; then
+  echo "Already installed — updating scripts/hooks, keeping your persona."
+else
+  echo "Installing git-meow..."
+fi
 
 mkdir -p "${SKILLS_DIR}/scripts" "${SKILLS_DIR}/githooks" "${COMMANDS_DIR}"
 
 if [[ -f "${SKILLS_DIR}/SKILL.md" ]]; then
-  echo "  SKILL.md already exists at ${SKILLS_DIR}/SKILL.md — leaving your identity/voice customization alone."
-  echo "  (edit it directly, or delete it and re-run install.sh, to reset to the template)"
+  : # keep existing persona/identity customization
 else
   cp "${SCRIPT_DIR}/skills/git-meow/SKILL.md" "${SKILLS_DIR}/SKILL.md"
-  echo "  Skill:   ${SKILLS_DIR}/SKILL.md (edit the identity block inside to set your own persona)"
+  echo "  Skill:   ${SKILLS_DIR}/SKILL.md"
 fi
 
 cp "${SCRIPT_DIR}/skills/git-meow/scripts/commit.sh" "${SKILLS_DIR}/scripts/commit.sh"
@@ -31,17 +34,11 @@ chmod +x "${SKILLS_DIR}/githooks/commit-msg" "${SKILLS_DIR}/githooks/pre-commit"
 
 cp "${SCRIPT_DIR}/commands/git-meow.md" "${COMMANDS_DIR}/git-meow.md"
 
-echo "  Scripts: ${SKILLS_DIR}/scripts/"
-echo "  Hooks:   ${SKILLS_DIR}/githooks/"
-echo "  Command: ${COMMANDS_DIR}/git-meow.md"
+echo "  Scripts/hooks/command in place."
 
-# --- Global enforcement gate ---
-# core.hooksPath is a single value per git-config scope — setting it globally
-# means it replaces .git/hooks (and any repo-local hooksPath override such as
-# husky, pre-commit framework, or lefthook) in EVERY repo on this machine,
-# until uninstall.sh reverts it. This is what actually blocks plain
-# `git commit` — the skill instructions alone can't (an LLM can forget/skip
-# them), a hook that git itself enforces can't be forgotten.
+# core.hooksPath set globally so plain `git commit` (by an AI agent) is
+# rejected everywhere until routed through commit.sh. Also disables any
+# repo-local hooks (husky, pre-commit, lefthook) while installed — see README.
 STATE_FILE="${SKILLS_DIR}/.prev-global-hookspath"
 prev_hooks_path="$(git config --global core.hooksPath 2>/dev/null || true)"
 
@@ -49,21 +46,15 @@ if [[ "$prev_hooks_path" == "$SKILLS_DIR/githooks" ]]; then
   : # already installed, nothing to save
 elif [[ -n "$prev_hooks_path" ]]; then
   echo "$prev_hooks_path" > "$STATE_FILE"
-  echo "  Note: overriding your existing global core.hooksPath ($prev_hooks_path)."
-  echo "        Saved to $STATE_FILE — uninstall.sh restores it."
+  echo "  Overriding existing global core.hooksPath ($prev_hooks_path) — saved, uninstall.sh restores it."
 else
   rm -f "$STATE_FILE"
 fi
 
 git config --global core.hooksPath "${SKILLS_DIR}/githooks"
-echo "  Gate:    core.hooksPath set globally to ${SKILLS_DIR}/githooks"
-echo "           Plain 'git commit' now fails everywhere until routed through commit.sh."
-echo "           WARNING: this also disables any repo-local git hooks (husky, pre-commit"
-echo "           framework, lefthook, ...) machine-wide while installed — see README.md."
 
 echo ""
-echo "Done. Works in any repo — no per-repo setup needed."
-echo "Restart Claude Code if it was already running."
+echo "Done."
 
 # --- Persona configured check ---
 # commit.sh silently falls back to your real git identity if the identity
@@ -86,28 +77,16 @@ cur_email="$(extract_field email)"
 
 case "${cur_name}${cur_email}" in
   *REPLACE_ME*|"")
-    echo ""
-    echo "=========================================================================="
-    echo " NOT READY YET: no persona identity is configured."
-    echo " Until you run setup-persona.sh, commits fall back SILENTLY to your own"
-    echo " git identity — git-meow won't error, it just won't do anything."
-    echo "=========================================================================="
+    echo "No persona configured yet — commits fall back silently to your own git identity until you set one."
     if [[ -t 0 ]]; then
-      echo ""
       read -rp "Run setup-persona.sh now? [Y/n]: " run_now
       if [[ ! "$run_now" =~ ^[Nn] ]]; then
         exec "${SKILLS_DIR}/scripts/setup-persona.sh"
       fi
-      echo "Skipped — run it yourself when ready:"
-    else
-      echo " (not running it now — this shell has no interactive input, e.g. it was"
-      echo " run by an agent rather than typed by you. Run it yourself when ready:)"
     fi
     echo "  ${SKILLS_DIR}/scripts/setup-persona.sh"
     ;;
   *)
-    echo ""
-    echo "Persona already configured: ${cur_name} <${cur_email}>"
-    echo "Re-run ${SKILLS_DIR}/scripts/setup-persona.sh any time to change it."
+    echo "Persona: ${cur_name} <${cur_email}>  (change: ${SKILLS_DIR}/scripts/setup-persona.sh)"
     ;;
 esac
