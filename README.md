@@ -2,7 +2,14 @@
 
 A repo for skills the ecosystem still misses. These are still open to change and are meant to be compatible with Claude Code desktop on Macos and Ubuntu, but should work everywhere.
 
-![kronny](./assets/preview-kronny.png)
+<div align="center">
+<img src="./assets/preview-kronny.png" width="30%">
+<img src="./assets/preview-meow.png" width="30%">
+</div>
+
+> love these crazy Photoshop skill? Try [Photopea](https://www.photopea.com)
+
+
 
 ## Install
 
