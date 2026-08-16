@@ -1,6 +1,6 @@
 # Trial Skills marketplace
 
-A repo for skills I test. Most-used skills get their own repo, like [kronny](https://github.com/jayf0x/kronny).
+A repo for skills the ecosystem still misses. These are still open to change and are meant to be compatible with Claude Code desktop on Macos and Ubuntu, but should work everywhere.
 
 ![kronny](./assets/preview-kronny.png)
 
@@ -16,6 +16,7 @@ One plugin:
 curl -fsSL https://raw.githubusercontent.com/jayf0x/claude-skills/main/install.sh | bash -s -- kronny
 ```
 
+Local install:
 <!-- INSTALL:START -->
 ```bash
 git clone https://github.com/jayf0x/claude-skills
@@ -42,7 +43,7 @@ Restart Claude Code after installing.
 
 ```
 /plugin marketplace add @jayf0x/skills
-/plugin install simple-name
+/plugin install git-meow
 ```
 
 > `/plugin` is not available in all environments — use the bash install above if that command isn't recognized.
@@ -56,7 +57,7 @@ Each plugin has its own README with install/uninstall details — linked below.
 <!-- PLUGINS:START -->
 | Plugin | Description | Install | Uninstall |
 | --- | --- | --- | --- |
-| [git-meow](./plugins/git-meow/README.md) | Attributes git commits to a configurable non-human co-pilot persona (cat, dog, or your own), in its voice, in every repo. Enforced by a global git hook — plain `git commit` is rejected. | `./plugins/git-meow/install.sh` | `./plugins/git-meow/uninstall.sh` |
+| [git-meow](./plugins/git-meow/README.md) | Attributes git commits to a configurable non-human co-pilot persona (cat, dog, or your own), in its voice, in every repo. Enforced by a git hook — plain `git commit` is rejected. Edit the identity block in the installed SKILL.md directly to customize. | `./plugins/git-meow/install.sh` | `./plugins/git-meow/uninstall.sh` |
 | [kronny](./plugins/kronny/README.md) | Grants time-limited auto-approve windows via a PreToolUse hook. /kronny [minutes] ["pattern"] — no session restart required. | `./plugins/kronny/install.sh` | `./plugins/kronny/uninstall.sh` |
 | [local-commands](./plugins/local-commands/README.md) | Collect non-obvious shell commands from sessions (/cmds-collect) and compress them into a globally-active cheat-sheet skill (/cmds-compress). | `./plugins/local-commands/install.sh` | `./plugins/local-commands/uninstall.sh` |
 | [my-style](./plugins/my-style/README.md) | A growing React style skill. Ships a preset of style rules (memory.md) active in every session, plus /my-style add and /my-style merge to let the rule set evolve from real use cases instead of being fixed upfront. | `./plugins/my-style/install.sh` | `./plugins/my-style/uninstall.sh` |
