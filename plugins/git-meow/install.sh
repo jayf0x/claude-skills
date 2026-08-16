@@ -7,19 +7,15 @@ SKILLS_DIR="${HOME}/.claude/skills/git-meow"
 COMMANDS_DIR="${HOME}/.claude/commands"
 
 if [[ -f "${SKILLS_DIR}/SKILL.md" ]]; then
-  echo "Already installed — updating scripts/hooks, keeping your persona."
-else
-  echo "Installing git-meow..."
+  if [[ -t 0 ]]; then
+    read -rp "git-meow already installed. Reinstall (scripts/hooks refreshed, persona kept)? [y/N]: " reinstall
+    [[ "$reinstall" =~ ^[Yy] ]] || { echo "Left as is."; exit 0; }
+  fi
 fi
 
 mkdir -p "${SKILLS_DIR}/scripts" "${SKILLS_DIR}/githooks" "${COMMANDS_DIR}"
 
-if [[ -f "${SKILLS_DIR}/SKILL.md" ]]; then
-  : # keep existing persona/identity customization
-else
-  cp "${SCRIPT_DIR}/skills/git-meow/SKILL.md" "${SKILLS_DIR}/SKILL.md"
-  echo "  Skill:   ${SKILLS_DIR}/SKILL.md"
-fi
+[[ -f "${SKILLS_DIR}/SKILL.md" ]] || cp "${SCRIPT_DIR}/skills/git-meow/SKILL.md" "${SKILLS_DIR}/SKILL.md"
 
 cp "${SCRIPT_DIR}/skills/git-meow/scripts/commit.sh" "${SKILLS_DIR}/scripts/commit.sh"
 cp "${SCRIPT_DIR}/skills/git-meow/scripts/push-account-install.sh" "${SKILLS_DIR}/scripts/push-account-install.sh"
@@ -34,8 +30,6 @@ chmod +x "${SKILLS_DIR}/githooks/commit-msg" "${SKILLS_DIR}/githooks/pre-commit"
 
 cp "${SCRIPT_DIR}/commands/git-meow.md" "${COMMANDS_DIR}/git-meow.md"
 
-echo "  Scripts/hooks/command in place."
-
 # core.hooksPath set globally so plain `git commit` (by an AI agent) is
 # rejected everywhere until routed through commit.sh. Also disables any
 # repo-local hooks (husky, pre-commit, lefthook) while installed — see README.
@@ -46,15 +40,14 @@ if [[ "$prev_hooks_path" == "$SKILLS_DIR/githooks" ]]; then
   : # already installed, nothing to save
 elif [[ -n "$prev_hooks_path" ]]; then
   echo "$prev_hooks_path" > "$STATE_FILE"
-  echo "  Overriding existing global core.hooksPath ($prev_hooks_path) — saved, uninstall.sh restores it."
+  echo "Note: overrode your existing global core.hooksPath ($prev_hooks_path) — uninstall.sh restores it."
 else
   rm -f "$STATE_FILE"
 fi
 
 git config --global core.hooksPath "${SKILLS_DIR}/githooks"
 
-echo ""
-echo "Done."
+echo "Installed: ${SKILLS_DIR}"
 
 # --- Persona configured check ---
 # commit.sh silently falls back to your real git identity if the identity

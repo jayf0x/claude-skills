@@ -8,7 +8,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILL_MD="${SCRIPT_DIR}/../SKILL.md"
 
-[[ -f "$SKILL_MD" ]] || { echo "SKILL.md not found next to this script — run plugins/git-meow/install.sh first." >&2; exit 1; }
+if [[ ! -f "$SKILL_MD" || ! -x "${SCRIPT_DIR}/commit.sh" || ! -f "${SCRIPT_DIR}/../githooks/pre-commit" ]]; then
+    echo "git-meow isn't fully installed — run install.sh first." >&2
+    exit 1
+fi
 
 extract_field() {
     awk -v f="$1" '
@@ -32,10 +35,6 @@ gh_accounts() {
     '
 }
 
-echo "== git-meow persona setup =="
-echo "Who gets credit for commits (and optionally pushes/PRs) as this persona."
-echo
-
 cur_name="$(extract_field name)"
 cur_email="$(extract_field email)"
 cur_user="$(extract_field github_username)"
@@ -55,7 +54,7 @@ command -v gh &>/dev/null && has_gh=1
 
 use_gh="n"
 if [[ "$has_gh" == 1 ]]; then
-    read -rp "Give this persona its own GitHub account to push/open PRs as? [y/N]: " use_gh
+    read -rp "Persona has its own GitHub account for pushes/PRs too (no = commit credit only, you still push)? [y/N]: " use_gh
 else
     echo "gh CLI not found (https://cli.github.com) — persona will be commit-author-only."
 fi
@@ -69,7 +68,8 @@ if [[ "$use_gh" =~ ^[Yy] ]]; then
 
     echo "Sign in as the persona's own GitHub account (browser login)."
     read -rp "Press enter to continue..." _
-    gh auth login --hostname github.com --git-protocol https --web
+    gh auth login --hostname github.com --git-protocol https --web \
+        --scopes "repo,gist,read:org,workflow,user"
 
     after="$(gh_accounts)"
     new_accounts="$(comm -13 <(sort <<<"$before") <(sort <<<"$after"))"
@@ -89,7 +89,12 @@ if [[ "$use_gh" =~ ^[Yy] ]]; then
     persona_token="$(gh auth token --hostname github.com --user "$gh_user" 2>/dev/null || true)"
     profile_name="$(GH_TOKEN="$persona_token" gh api user --jq '.name // .login')"
 
-    email_list="$(GH_TOKEN="$persona_token" gh api user/emails --jq '.[] | select(.verified) | .email' 2>/dev/null || true)"
+    if ! email_list="$(GH_TOKEN="$persona_token" gh api user/emails --jq '.[] | select(.verified) | .email' 2>/dev/null)"; then
+        # likely missing the 'user' scope (older login) — ask for it once, then retry
+        gh auth refresh --hostname github.com --scopes "repo,gist,read:org,workflow,user" >/dev/null 2>&1 || true
+        persona_token="$(gh auth token --hostname github.com --user "$gh_user" 2>/dev/null || true)"
+        email_list="$(GH_TOKEN="$persona_token" gh api user/emails --jq '.[] | select(.verified) | .email' 2>/dev/null || true)"
+    fi
     verified_emails=()
     while IFS= read -r e; do [[ -n "$e" ]] && verified_emails+=("$e"); done <<<"$email_list"
 
