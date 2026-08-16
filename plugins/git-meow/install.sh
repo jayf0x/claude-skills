@@ -21,6 +21,8 @@ fi
 cp "${SCRIPT_DIR}/skills/git-meow/scripts/commit.sh" "${SKILLS_DIR}/scripts/commit.sh"
 cp "${SCRIPT_DIR}/skills/git-meow/scripts/push-account-install.sh" "${SKILLS_DIR}/scripts/push-account-install.sh"
 cp "${SCRIPT_DIR}/skills/git-meow/scripts/push-account-uninstall.sh" "${SKILLS_DIR}/scripts/push-account-uninstall.sh"
+cp "${SCRIPT_DIR}/skills/git-meow/scripts/setup-persona.sh" "${SKILLS_DIR}/scripts/setup-persona.sh"
+cp "${SCRIPT_DIR}/skills/git-meow/scripts/grant-repo-access.sh" "${SKILLS_DIR}/scripts/grant-repo-access.sh"
 chmod +x "${SKILLS_DIR}/scripts/"*.sh
 
 cp "${SCRIPT_DIR}/skills/git-meow/githooks/commit-msg" "${SKILLS_DIR}/githooks/commit-msg"
@@ -62,3 +64,6 @@ echo "           framework, lefthook, ...) machine-wide while installed — see 
 echo ""
 echo "Done. Works in any repo — no per-repo setup needed."
 echo "Restart Claude Code if it was already running."
+echo ""
+echo "Next: run ${SKILLS_DIR}/scripts/setup-persona.sh to set the persona's identity"
+echo "(and, optionally, make it push/PR under its own GitHub account)."

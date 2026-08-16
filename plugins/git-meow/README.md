@@ -12,15 +12,15 @@ Attributes git commits to a configurable non-human co-pilot (a cat, a dog, whate
 
 This installs the skill, wrapper scripts, a `commit-msg` + `pre-commit` git hook pair, the `/git-meow` command, and sets `git config --global core.hooksPath` to point at those hooks — globally, in every repo. Restart Claude Code if it was already running.
 
-**Then set the persona** (required before first use): edit the identity block near the top of `~/.claude/skills/git-meow/SKILL.md`:
+**Then set the persona** (required before first use):
 
-```
-name: ...
-email: ...
-github_username: ...
+```bash
+~/.claude/skills/git-meow/scripts/setup-persona.sh
 ```
 
-Everything else — voice, personality, examples — lives in that same file; edit directly, no separate config.
+Prompts for the persona's name/email/GitHub username and writes them into the identity block near the top of `~/.claude/skills/git-meow/SKILL.md` (that file is still the only place identity lives — edit it directly any time instead, if you prefer). It then optionally walks you through logging the persona into `gh` and switching pushes/PRs to authenticate as it (see below). Re-running it is how you set this up on a new machine, or swap in a different persona account.
+
+Voice, personality, and examples also live in `SKILL.md`; edit directly, no separate config.
 
 ### About the global hook gate
 
@@ -30,17 +30,25 @@ Everything else — voice, personality, examples — lives in that same file; ed
 
 ## Optional: also push/PR as the persona
 
-By default only the commit *author* changes — pushes and `gh pr create` still authenticate as you. To also push as the persona's own GitHub account:
+By default only the commit *author* changes — pushes and `gh pr create` still authenticate as you. `setup-persona.sh` offers to set this up (logging the persona into `gh`, then running the script below); to redo it standalone:
 
 ```bash
 ~/.claude/skills/git-meow/scripts/push-account-install.sh
 ```
 
-This requires the `gh` CLI and a second, already-authenticated `gh` account for the persona (`gh auth login --hostname github.com` will offer to add one if you're already logged in as yourself). It's global to the `gh` CLI — affects pushes from every repo, not just this one — until reverted:
+Requires the `gh` CLI and a second, already-authenticated `gh` account for the persona. It's global to the `gh` CLI — affects pushes from every repo, not just this one — until reverted:
 
 ```bash
 ~/.claude/skills/git-meow/scripts/push-account-uninstall.sh
 ```
+
+**The persona also needs push access on the actual repo(s)** before this does anything useful — being the active `gh` account doesn't grant permissions. Being the commit *author* never required this (that's just text in a commit), but pushing does:
+
+```bash
+~/.claude/skills/git-meow/scripts/grant-repo-access.sh
+```
+
+Asks whether to invite the persona as a collaborator on just the repo you're standing in, or on every local repo you own under a directory you pick — then accepts the invite(s) as the persona so there's no dangling manual step. Not run automatically by `setup-persona.sh`; call it whenever you actually hit a repo the persona can't push to.
 
 ## Use
 

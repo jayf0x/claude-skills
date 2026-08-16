@@ -39,7 +39,8 @@ if [[ -f "$STATE_FILE" ]]; then
     exit 1
 fi
 
-gh auth status --hostname github.com 2>&1 | grep -qi "account $gh_user" || {
+auth_status="$(gh auth status --hostname github.com 2>&1)"
+grep -qi "account $gh_user" <<<"$auth_status" || {
     echo "Not logged into gh as $gh_user yet." >&2
     echo "Run: gh auth login --hostname github.com" >&2
     echo "gh will detect you're already logged in and offer to add another account — sign in as $gh_user." >&2
