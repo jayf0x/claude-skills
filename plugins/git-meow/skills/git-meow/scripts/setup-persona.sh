@@ -49,73 +49,79 @@ if ! is_placeholder "$cur_name" && ! is_placeholder "$cur_email"; then
     echo
 fi
 
-# Identity is the only required part: name/email is what shows up as the
-# commit author. Nothing here needs GitHub — pushes still go out under your
-# own gh account either way, this is just the name on the commit.
-read -rp "Persona name: " name
-read -rp "Persona email: " email
+name=""
+email=""
+gh_user=""
+has_gh=0
+command -v gh &>/dev/null && has_gh=1
+
+if [[ "$has_gh" == 1 ]]; then
+    mapfile -t accts < <(gh_accounts)
+    if [[ ${#accts[@]} -gt 0 ]]; then
+        echo "Is the persona already logged in?"
+        options=("${accts[@]}" "Log in as a different account")
+        select opt in "${options[@]}"; do
+            [[ -n "$opt" ]] || continue
+            [[ "$opt" != "Log in as a different account" ]] && gh_user="$opt"
+            break
+        done
+    fi
+
+    if [[ -z "$gh_user" ]]; then
+        echo "Sign in as the persona's GitHub account (browser login)."
+        read -rp "Press enter to continue..." _
+        gh auth login --hostname github.com --git-protocol https --web
+        gh_user="$(gh auth status --hostname github.com 2>&1 | awk '
+            {for(i=1;i<=NF;i++) if($i=="account") cur=$(i+1)}
+            /Active account: true/ {print cur; exit}
+        ')"
+    fi
+
+    # Public profile fields — no extra gh scope needed. Build a GitHub
+    # noreply email so commits count toward the persona's contribution graph
+    # without ever needing its real (possibly unverified-to-us) email.
+    persona_token="$(gh auth token --hostname github.com --user "$gh_user" 2>/dev/null || true)"
+    profile_name="$(GH_TOKEN="$persona_token" gh api user --jq '.name // .login' 2>/dev/null || true)"
+    persona_id="$(GH_TOKEN="$persona_token" gh api user --jq '.id' 2>/dev/null || true)"
+    noreply_email=""
+    [[ -n "$persona_id" ]] && noreply_email="${persona_id}+${gh_user}@users.noreply.github.com"
+
+    read -rp "Persona name [${profile_name:-$gh_user}]: " name
+    name="${name:-${profile_name:-$gh_user}}"
+    read -rp "Persona email [${noreply_email:-required, no default}]: " email
+    email="${email:-$noreply_email}"
+else
+    echo "gh CLI not found (https://cli.github.com) — enter identity manually."
+fi
+
+[[ -n "$name" ]] || read -rp "Persona name: " name
+[[ -n "$email" ]] || read -rp "Persona email: " email
 
 [[ -n "$name" ]] || { echo "Name can't be empty — aborting." >&2; exit 1; }
 [[ "$email" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]] || { echo "'$email' doesn't look like a valid email — aborting." >&2; exit 1; }
 
-awk -v name="$name" -v email="$email" '
+awk -v name="$name" -v email="$email" -v user="$gh_user" '
   /<!-- meow-identity/ { inblock=1 }
   inblock && /^name:/ { print "name: " name; next }
   inblock && /^email:/ { print "email: " email; next }
-  inblock && /-->/ { inblock=0 }
-  { print }
-' "$SKILL_MD" > "${SKILL_MD}.tmp" && mv "${SKILL_MD}.tmp" "$SKILL_MD"
-
-echo "Identity set: $name <$email> — commits will be authored as this from now on."
-
-command -v gh &>/dev/null || exit 0
-
-# --- Optional: push/PR as the persona's own GitHub account -----------------
-# What this does and doesn't do:
-#   - The identity above is ALREADY enough to get commit-author credit — this
-#     step is unrelated to that, and skipping it changes nothing about it.
-#   - This is only about who *pushes* / *opens PRs*: by default that's still
-#     you (your own gh login), even though commits are authored as the
-#     persona. Say yes here only if you want the persona to have its own
-#     real GitHub account doing the pushing/PR-opening too.
-#   - Saying yes logs into gh CLI as a second account and can switch gh's
-#     *active* account globally (every repo on this machine, until you
-#     revert it) — that's a bigger footprint than just the commit identity.
-echo
-read -rp "Also give '$name' its own GitHub account for pushes/PRs (optional, separate from the above)? [y/N]: " use_gh
-[[ "$use_gh" =~ ^[Yy] ]] || exit 0
-
-before="$(gh_accounts)"
-echo "Sign in as that account (browser login)."
-read -rp "Press enter to continue..." _
-gh auth login --hostname github.com --git-protocol https --web
-
-after="$(gh_accounts)"
-new_accounts="$(comm -13 <(sort <<<"$before") <(sort <<<"$after"))"
-new_count="$(grep -c . <<<"$new_accounts" || true)"
-
-if [[ "$new_count" -eq 1 ]]; then
-    gh_user="$new_accounts"
-else
-    echo "Which account is the persona?"
-    mapfile -t all_accounts < <(gh_accounts)
-    select acct in "${all_accounts[@]}"; do
-        [[ -n "$acct" ]] && gh_user="$acct" && break
-    done
-fi
-
-awk -v user="$gh_user" '
-  /<!-- meow-identity/ { inblock=1 }
   inblock && /^github_username:/ { print "github_username: " user; next }
   inblock && /-->/ { inblock=0 }
   { print }
 ' "$SKILL_MD" > "${SKILL_MD}.tmp" && mv "${SKILL_MD}.tmp" "$SKILL_MD"
 
-echo "Persona's GitHub account: $gh_user"
+echo "Identity set: $name <$email>${gh_user:+ (github: $gh_user)}"
+
+[[ -n "$gh_user" ]] || exit 0
+
+# Being logged in as the persona above is NOT the same as pushing as it —
+# `git push` / `gh pr create` still authenticate as YOUR active gh account
+# until you explicitly flip it here. This is global (every repo on this
+# machine) until push-account-uninstall.sh reverts it, so it's a separate,
+# deliberate step rather than bundled into login.
 echo
-read -rp "Switch gh's active account to $gh_user now (global, affects every repo on this machine)? [y/N]: " do_switch
+read -rp "Also switch gh's active account to $gh_user, so pushes/PRs authenticate as it too (global)? [y/N]: " do_switch
 if [[ ! "$do_switch" =~ ^[Yy] ]]; then
-    echo "Skipped. Run ${SCRIPT_DIR}/push-account-install.sh later if you change your mind."
+    echo "Skipped. Pushes/PRs still go out as you. Run ${SCRIPT_DIR}/push-account-install.sh later if you change your mind."
     exit 0
 fi
 
