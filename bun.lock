@@ -9,6 +9,6 @@
     },
   },
   "packages": {
-    "taglify": ["taglify@1.2.0", "", {}, "sha512-/cyk7+uBGKn3uIav6uaWb2A7Pw5zKaGt6jzBIChoacWUlYT71bqYepKddPg2mXjJEgrgEgIB98WA0sScRB4Cuw=="],
+    "taglify": ["taglify@1.2.1", "", {}, "sha512-x3kxa7cISxNgFrumPXQVMZwWHrVdTL+pmz3XaNtU0yAKdC9jKupTD5psWsyt21cpHEbM9fE5CR7858HOcVbrfQ=="],
   }
 }
